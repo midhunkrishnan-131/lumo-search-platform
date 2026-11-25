@@ -1,0 +1,21 @@
+# LUMO backend foundation. Python 3.12 or newer.
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+# Stay on SQLAlchemy 2.0. The 2.1 Windows wheels ship compiled extensions that
+# Windows Application Control can block. 2.0 falls back to pure Python.
+sqlalchemy==2.0.58
+psycopg[binary]==3.3.9
+pydantic-settings==2.16.3
+beautifulsoup4==4.15.0
+
+# Semantic Search & Vector Storage (Phase 6)
+qdrant-client==1.20.0
+sentence-transformers==6.3.0
+
+# Tests
+pytest==9.2.0
+httpx==0.28.1
+
+# Download Guardian File Uploads (Phase 10)
+python-multipart>=0.0.20
+pypdf>=7.0

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Personalization — LUMO</title>
+    <meta
+      name="description"
+      content="Transparent, user-controlled interests, source preferences, discovery recommendations, and privacy controls in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Adaptive Personalization</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Adaptive Personalization</span>
+          </nav>
+          <h1 class="workspace-title">Adaptive Intelligence &amp; Personalization</h1>
+          <p class="workspace-subtitle">
+            Opt-in, transparent topic and source preferences. Personalization runs strictly locally,
+            never infers sensitive personal traits, and can be disabled or wiped anytime.
+          </p>
+        </div>
+
+        <div id="pers-status-banner" class="notice-banner" style="margin-bottom: 1.25rem; justify-content: space-between; align-items: center;">
+          <div id="pers-status-text">Loading personalization profile...</div>
+          <button type="button" id="pers-reset-btn" class="btn btn--ghost btn--sm">Reset &amp; Delete Profile</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+          <!-- CONTROLS & SETTINGS -->
+          <section class="panel" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <h2 class="section-heading">Privacy &amp; Ranking Controls</h2>
+            <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
+              <input id="pers-enabled-toggle" type="checkbox" />
+              <span><strong>Enable Adaptive Personalization</strong> (opt-in)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; cursor: pointer;">
+              <input id="pers-history-toggle" type="checkbox" />
+              <span>Learn non-sensitive topics from search queries</span>
+            </label>
+            <div>
+              <label class="field-label" for="pers-weight-range">Bounded Ranking Weight: <span id="pers-weight-label">0.25</span></label>
+              <input id="pers-weight-range" type="range" min="0" max="0.5" step="0.05" value="0.25" style="width: 100%;" />
+            </div>
+            <p class="field-hint">
+              Ranking adjustments are strictly bounded and never override core query relevance.
+              Preferred sources are separate from source credibility.
+            </p>
+          </section>
+
+          <!-- EXPLICIT INTERESTS -->
+          <section class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <h2 class="section-heading">Explicit Interests &amp; Exclusions</h2>
+            <form id="pers-interest-form" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <input id="pers-interest-topic" type="text" class="text-input" style="flex: 1 1 140px;" placeholder="e.g., Python, Vector Search..." required />
+              <select id="pers-interest-kind" class="select-input" style="width: auto;">
+                <option value="explicit">Follow</option>
+                <option value="excluded">Hide Topic</option>
+              </select>
+              <button type="submit" class="btn btn--primary btn--sm">Add</button>
+            </form>
+            <div id="pers-interests-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem;"></div>
+          </section>
+
+          <!-- SOURCE PREFERENCES -->
+          <section class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <h2 class="section-heading">Source Domain Preferences</h2>
+            <form id="pers-source-form" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <input id="pers-source-domain" type="text" class="text-input" style="flex: 1 1 140px;" placeholder="e.g., docs.python.org" required />
+              <select id="pers-source-kind" class="select-input" style="width: auto;">
+                <option value="preferred">Prefer</option>
+                <option value="excluded">Exclude</option>
+              </select>
+              <button type="submit" class="btn btn--secondary btn--sm">Save</button>
+            </form>
+            <div id="pers-sources-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+          </section>
+
+          <!-- PERSONALIZED DISCOVERY -->
+          <section class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <h2 class="section-heading">Personalized Discovery</h2>
+            <div id="pers-recs-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          </section>
+        </div>
+
+        <section class="panel" style="margin-top: 1.25rem;">
+          <h2 class="section-heading" style="margin-bottom: 0.5rem;">Observed Topics &amp; Recent Feedback</h2>
+          <div id="pers-topics-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;"></div>
+          <div id="pers-feedback-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/personalization.js"></script>
+  </body>
+</html>

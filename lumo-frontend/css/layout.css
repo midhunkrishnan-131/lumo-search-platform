@@ -1,0 +1,315 @@
+/* ==========================================================================
+   LUMO Page Layout & Structure
+   Compact chrome header, spacious centered homepage, structured workspaces.
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-height);
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.site-header--bordered,
+.site-header.is-scrolled {
+  border-bottom-color: var(--border-color);
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1360px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+}
+
+.brand-symbol {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.brand-wordmark {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Main Content Shells */
+.page-main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+/* Homepage Layout */
+.home-stage {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6.5vh, 4.75rem) var(--space-6) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-search-zone {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-greeting-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.hero-headline {
+  font-size: var(--text-hero);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.16;
+  margin-bottom: var(--space-3);
+  max-width: 18ch;
+}
+
+.hero-subtitle {
+  font-size: var(--text-md);
+  color: var(--text-secondary);
+  max-width: 48ch;
+  text-wrap: balance;
+  margin-bottom: var(--space-8);
+}
+
+/* Daily Discovery Band */
+.daily-section {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-top: clamp(3rem, 7vh, 4.75rem);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border-color);
+}
+
+.daily-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.daily-section-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.daily-section-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.daily-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.daily-cell {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.daily-cell:nth-child(odd) {
+  border-right: 1px solid var(--border-color);
+  padding-left: 0;
+}
+
+.daily-cell:nth-child(even) {
+  padding-right: 0;
+}
+
+.daily-cell:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+/* Sub-Page Standard Container */
+.workspace-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+
+.workspace-container--narrow {
+  max-width: var(--container-narrow);
+}
+
+.workspace-header {
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.workspace-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.workspace-breadcrumb a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.workspace-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.workspace-subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  max-width: 68ch;
+}
+
+/* Results Page Layout */
+.results-header-band {
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.results-header-inner {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.results-layout {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6) var(--space-16);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+.results-main-col {
+  min-width: 0;
+}
+
+.results-aside {
+  border-left: 1px solid var(--border-color);
+  padding-left: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Two-Column Workspace Split (Research / Guardian / Graph) */
+.split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.graph-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.footer-inner {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  transition: color var(--duration-fast) var(--ease-standard);
+  white-space: nowrap;
+}
+
+.footer-links a:hover {
+  color: var(--text-primary);
+}

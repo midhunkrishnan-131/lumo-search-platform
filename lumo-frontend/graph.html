@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Knowledge Graph — LUMO</title>
+    <meta
+      name="description"
+      content="Explore connected entities, concepts, relationships, and source references in the LUMO Knowledge Graph."
+    />
+    <meta property="og:title" content="Knowledge Graph — LUMO" />
+    <meta
+      property="og:description"
+      content="Interactive monochrome entity-relationship explorer on LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Knowledge Graph</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Knowledge Graph</span>
+          </nav>
+          <h1 class="workspace-title">Knowledge Graph</h1>
+          <p class="workspace-subtitle">
+            Explore connected entities, typed relationships, and source references. Click any node
+            or drag the canvas to traverse related concepts.
+          </p>
+        </div>
+
+        <div id="graph-status-banner" class="notice-banner" style="margin-bottom: 1.25rem; justify-content: space-between; align-items: center;">
+          <div id="graph-status-text">
+            <strong>Knowledge Graph</strong> · Connecting entities, relationships, and document provenance via
+            <span class="mono">GET /api/v1/graph</span>.
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button type="button" id="graph-reprocess-btn" class="btn btn--secondary btn--sm">Reprocess Index</button>
+            <a href="./settings.html" class="text-link" style="font-size: 0.8125rem;">Settings</a>
+          </div>
+        </div>
+
+        <div class="graph-layout">
+          <section class="graph-canvas-wrap" aria-label="Interactive entity relationship graph">
+            <div class="graph-toolbar">
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1 1 auto; min-width: 0; flex-wrap: wrap;">
+                <label for="graph-search-input" class="sr-only">Filter entities</label>
+                <input
+                  id="graph-search-input"
+                  class="text-input"
+                  style="width: 170px; padding: 0.35rem 0.6rem; font-size: 0.8125rem;"
+                  type="search"
+                  placeholder="Filter entities..."
+                />
+                <div class="filter-tabs" role="group" aria-label="Entity type filter">
+                  <button type="button" class="filter-tab" data-graph-type="All" aria-pressed="true">All</button>
+                  <button type="button" class="filter-tab" data-graph-type="Concept" aria-pressed="false">Concept</button>
+                  <button type="button" class="filter-tab" data-graph-type="Technology" aria-pressed="false">Technology</button>
+                  <button type="button" class="filter-tab" data-graph-type="Protocol" aria-pressed="false">Protocol</button>
+                  <button type="button" class="filter-tab" data-graph-type="Module" aria-pressed="false">Module</button>
+                  <button type="button" class="filter-tab" data-graph-type="Organization" aria-pressed="false">Organization</button>
+                  <button type="button" class="filter-tab" data-graph-type="Person" aria-pressed="false">Person</button>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <button type="button" id="graph-zoom-out" class="btn btn--secondary btn--sm" aria-label="Zoom out">−</button>
+                <button type="button" id="graph-zoom-in" class="btn btn--secondary btn--sm" aria-label="Zoom in">+</button>
+                <button type="button" id="graph-reset-view" class="btn btn--secondary btn--sm">Reset</button>
+              </div>
+            </div>
+
+            <svg
+              id="graph-svg"
+              class="graph-svg"
+              viewBox="0 0 800 470"
+              role="img"
+              aria-label="LUMO Knowledge Graph interactive visualization"
+            ></svg>
+
+            <div
+              style="padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); background-color: var(--bg-primary);"
+            >
+              <div class="field-hint" style="margin-bottom: 0.5rem;">Quick entity navigation:</div>
+              <div id="graph-entity-list" class="filter-tabs"></div>
+            </div>
+          </section>
+
+          <aside id="graph-inspector" class="panel" aria-label="Entity details inspector"></aside>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/graph.js"></script>
+  </body>
+</html>

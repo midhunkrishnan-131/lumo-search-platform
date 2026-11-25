@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LUMO Companion Settings</title>
+    <link rel="stylesheet" href="./popup.css" />
+    <style>
+      body {
+        width: auto;
+        max-width: 540px;
+        margin: 24px auto;
+        padding: 16px;
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <img src="./icons/icon48.png" alt="LUMO" />
+        <span>LUMO Companion Settings</span>
+      </div>
+      <span id="opt-status" class="status-pill">Ready</span>
+    </header>
+
+    <form id="options-form" class="card">
+      <div class="field">
+        <label for="opt-backend-url">LUMO FastAPI Backend URL</label>
+        <input id="opt-backend-url" type="url" class="input" placeholder="http://127.0.0.1:8000" required />
+      </div>
+      <div class="field">
+        <label for="opt-frontend-url">LUMO Frontend URL</label>
+        <input id="opt-frontend-url" type="url" class="input" placeholder="http://127.0.0.1:3000" required />
+      </div>
+      <div class="field">
+        <label for="opt-theme">Theme</label>
+        <select id="opt-theme" class="select">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="opt-default-collection">Default Collection</label>
+        <select id="opt-default-collection" class="select">
+          <option value="">No default collection</option>
+        </select>
+      </div>
+      <label class="checkbox-row">
+        <input id="opt-capture-desc" type="checkbox" />
+        <span>Capture page meta description when saving pages</span>
+      </label>
+      <label class="checkbox-row">
+        <input id="opt-capture-sel" type="checkbox" />
+        <span>Include active text selection when saving pages</span>
+      </label>
+
+      <div class="btn-row" style="margin-top: 12px;">
+        <button type="submit" class="btn btn--primary">Save Settings</button>
+        <button type="button" id="opt-test-btn" class="btn">Test Connection</button>
+      </div>
+      <div id="opt-feedback" class="feedback"></div>
+    </form>
+
+    <script type="module" src="./options.js"></script>
+  </body>
+</html>

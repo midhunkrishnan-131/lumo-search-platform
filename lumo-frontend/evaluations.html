@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evaluation &amp; Benchmarks — LUMO</title>
+    <meta
+      name="description"
+      content="LUMO Evaluation & Benchmarking Engine: Search comparison, AI citations, Knowledge Graph, Data Intelligence, Guardian, and regression tracking."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <style>
+      .ev-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+      .ev-stat { padding: 0.9rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); }
+      .ev-stat-val { font-size: 1.45rem; font-weight: 700; }
+      .ev-stat-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+      .ev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.15rem; margin-top: 1rem; }
+      @media (max-width: 960px) { .ev-grid { grid-template-columns: 1fr; } }
+      .ev-row { padding: 0.65rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+      .ev-row:last-child { border-bottom: none; }
+      .ev-badge { display: inline-block; padding: 0.16rem 0.55rem; border-radius: 999px; font-size: 0.74rem; background: var(--surface-muted); border: 1px solid var(--border-subtle); }
+      .ev-pre { padding: 0.8rem; border-radius: 10px; background: var(--surface-muted); border: 1px solid var(--border-subtle); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; white-space: pre-wrap; max-height: 280px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Evaluation Dashboard</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Evaluation &amp; Benchmarks</span>
+          </nav>
+          <h1 class="workspace-title">Intelligence Evaluation &amp; Benchmarking Engine</h1>
+          <p class="workspace-subtitle">
+            Objectively measure Classic/Semantic/Hybrid Search (Precision@K, Recall@K, MRR, MAP, NDCG@K),
+            AI citations, Knowledge Graph F1, Data accuracy, Guardian rules, latency, and regressions.
+          </p>
+        </div>
+
+        <div id="ev-banner" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+        <section class="ev-stats" aria-label="Evaluation Overview">
+          <div class="ev-stat"><div class="ev-stat-val" id="ev-stat-ds">0</div><div class="ev-stat-lbl">Datasets</div></div>
+          <div class="ev-stat"><div class="ev-stat-val" id="ev-stat-bm">0</div><div class="ev-stat-lbl">Benchmarks</div></div>
+          <div class="ev-stat"><div class="ev-stat-val" id="ev-stat-runs">0</div><div class="ev-stat-lbl">Total Runs</div></div>
+          <div class="ev-stat"><div class="ev-stat-val" id="ev-stat-pass">0%</div><div class="ev-stat-lbl">Latest Pass Rate</div></div>
+        </section>
+
+        <div class="ev-grid">
+          <section class="panel-card" aria-labelledby="ev-ds-heading">
+            <h2 id="ev-ds-heading">Create Evaluation Dataset</h2>
+            <form id="ev-ds-form" class="stack-form">
+              <input id="ev-ds-name" type="text" placeholder="Dataset name (e.g. Core Search Suite)" required />
+              <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
+                <select id="ev-ds-cat" aria-label="Dataset Category">
+                  <option value="search">Search</option>
+                  <option value="ai_search">AI Search</option>
+                  <option value="knowledge_graph">Knowledge Graph</option>
+                  <option value="document">Document Intelligence</option>
+                  <option value="data_intelligence">Data Intelligence</option>
+                  <option value="guardian">Guardian</option>
+                </select>
+                <input id="ev-ds-ver" type="text" value="1.0" placeholder="Version" style="width:90px;" />
+              </div>
+              <textarea id="ev-ds-cases" rows="4" placeholder='[{"query": "LUMO", "relevant_ids": ["demo-lumo-arch"]}]' required style="margin-top:0.4rem; font-family:'IBM Plex Mono', monospace;"></textarea>
+              <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Save Dataset</button>
+            </form>
+            <div id="ev-ds-list" style="margin-top:0.75rem;"></div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="ev-bm-heading">
+            <h2 id="ev-bm-heading">Benchmark Registry &amp; Execution</h2>
+            <form id="ev-bm-form" class="stack-form">
+              <input id="ev-bm-name" type="text" placeholder="Benchmark name" required />
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.4rem;">
+                <select id="ev-bm-target" aria-label="Target Module">
+                  <option value="search_comparison">Search Comparison (Classic vs Semantic vs Hybrid)</option>
+                  <option value="classic_search">Classic Search</option>
+                  <option value="semantic_search">Semantic Search</option>
+                  <option value="hybrid_search">Hybrid Search</option>
+                  <option value="ai_search">AI Search &amp; Citations</option>
+                  <option value="knowledge_graph">Knowledge Graph</option>
+                  <option value="document_intelligence">Document Intelligence</option>
+                  <option value="data_intelligence">Data Intelligence</option>
+                  <option value="guardian">Download Guardian</option>
+                </select>
+                <select id="ev-bm-ds" aria-label="Dataset"></select>
+              </div>
+              <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Register Benchmark</button>
+            </form>
+            <div id="ev-bm-list" style="margin-top:0.75rem;"></div>
+          </section>
+        </div>
+
+        <div class="ev-grid">
+          <section class="panel-card" aria-labelledby="ev-runs-heading">
+            <h2 id="ev-runs-heading">Recent Evaluation Runs</h2>
+            <div id="ev-runs-list"></div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="ev-cmp-heading">
+            <h2 id="ev-cmp-heading">Run Comparison &amp; Regression Check</h2>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <select id="ev-cmp-base" aria-label="Baseline Run" style="flex:1;"></select>
+              <select id="ev-cmp-curr" aria-label="Current Run" style="flex:1;"></select>
+              <button id="ev-cmp-btn" type="button" class="btn-primary">Compare</button>
+            </div>
+            <pre id="ev-cmp-out" class="ev-pre" hidden style="margin-top:0.65rem;"></pre>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/evaluations.js"></script>
+  </body>
+</html>

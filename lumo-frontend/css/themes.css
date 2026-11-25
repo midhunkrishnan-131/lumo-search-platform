@@ -1,0 +1,127 @@
+/* ==========================================================================
+   LUMO Design Tokens & Theme System (Modern Monochrome)
+   Strict black, white, and neutral grey palette across Light and Dark modes.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Official Light Theme Palette */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F7F7;
+  --bg-elevated: #FFFFFF;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+  --border-color: #E5E5E5;
+  --border-strong: #CCCCCC;
+  --btn-primary-bg: #111111;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #262626;
+  --surface-hover: #EEEEEE;
+  --surface-active: #E5E5E5;
+  --disabled-color: #BDBDBD;
+  --focus-ring: #111111;
+
+  /* Input & Navigation Tokens */
+  --input-bg: #FFFFFF;
+  --input-border: #D9D9D9;
+  --input-border-hover: #B5B5B5;
+  --input-border-focus: #111111;
+  --nav-bg: rgba(255, 255, 255, 0.94);
+  --card-bg: #FFFFFF;
+  --card-subtle-bg: #F7F7F7;
+
+  /* Subtle Monochrome Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-search: 0 2px 10px rgba(0, 0, 0, 0.04);
+  --shadow-search-focus: 0 6px 24px rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 0.9375rem;  /* 15px */
+  --text-md: 1rem;         /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.375rem;     /* 22px */
+  --text-2xl: 1.75rem;     /* 28px */
+  --text-hero: clamp(2rem, 3.4vw, 2.75rem);
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-search: 28px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-normal: 180ms;
+
+  /* Layout Dimensions */
+  --header-height: 64px;
+  --container-max: 1120px;
+  --container-narrow: 760px;
+  --container-results: 860px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Official Dark Theme Palette */
+  --bg-primary: #101010;
+  --bg-secondary: #191919;
+  --bg-elevated: #171717;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A3A3A3;
+  --text-muted: #777777;
+  --border-color: #303030;
+  --border-strong: #474747;
+  --btn-primary-bg: #FFFFFF;
+  --btn-primary-text: #111111;
+  --btn-primary-hover: #E8E8E8;
+  --surface-hover: #292929;
+  --surface-active: #333333;
+  --disabled-color: #666666;
+  --focus-ring: #FFFFFF;
+
+  /* Input & Navigation Tokens */
+  --input-bg: #161616;
+  --input-border: #303030;
+  --input-border-hover: #4A4A4A;
+  --input-border-focus: #FFFFFF;
+  --nav-bg: rgba(16, 16, 16, 0.94);
+  --card-bg: #151515;
+  --card-subtle-bg: #191919;
+
+  /* Subtle Monochrome Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-search: 0 2px 10px rgba(0, 0, 0, 0.28);
+  --shadow-search-focus: 0 8px 28px rgba(0, 0, 0, 0.48);
+}
+
+:root[data-density="compact"] {
+  --space-6: 1.25rem;
+  --space-8: 1.5rem;
+  --space-10: 2rem;
+  --space-12: 2.25rem;
+}

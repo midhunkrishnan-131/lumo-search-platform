@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search — LUMO</title>
+    <meta
+      name="description"
+      content="Search results on LUMO across Classic, Semantic, and Hybrid retrieval modes."
+    />
+    <meta property="og:title" content="Search — LUMO" />
+    <meta
+      property="og:description"
+      content="Explore search results with Classic, Semantic, and Hybrid retrieval on LUMO."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to search results</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <section class="results-header-band" aria-label="Search query controls">
+        <div class="results-header-inner">
+          <form
+            id="results-search-form"
+            role="search"
+            aria-label="Refine search"
+            style="max-width: 720px; width: 100%;"
+          >
+            <div class="search-box search-box--compact">
+              <svg
+                class="search-box__icon"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="9" r="5.75" />
+                <path d="m16.5 16.5-3.4-3.4" />
+              </svg>
+              <label for="results-search-input" class="sr-only">Search query</label>
+              <input
+                id="results-search-input"
+                class="search-box__input"
+                type="search"
+                name="q"
+                autocomplete="off"
+                placeholder="Search LUMO..."
+              />
+              <button
+                type="button"
+                id="results-search-clear"
+                class="search-box__clear"
+                aria-label="Clear search query"
+                hidden
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 4l8 8M12 4l-8 8" />
+                </svg>
+              </button>
+              <button type="submit" class="search-box__submit">Search</button>
+            </div>
+          </form>
+
+          <div class="mode-selector-wrap mode-selector-wrap--left">
+            <div class="segmented-control" role="group" aria-label="Search mode">
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-search-mode="classic"
+                aria-pressed="false"
+              >
+                Classic
+              </button>
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-search-mode="semantic"
+                aria-pressed="false"
+              >
+                Semantic
+              </button>
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-search-mode="hybrid"
+                aria-pressed="true"
+              >
+                Hybrid
+              </button>
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-search-mode="ai"
+                aria-pressed="false"
+              >
+                AI Search
+              </button>
+            </div>
+            <p id="results-mode-description" class="mode-description"></p>
+          </div>
+        </div>
+      </section>
+
+      <div class="results-layout">
+        <section class="results-main-col" aria-label="Search results">
+          <div id="results-source-notice" class="notice-banner" style="margin-bottom: 1.25rem;"></div>
+
+          <div class="results-toolbar">
+            <div id="results-summary" class="results-summary" aria-live="polite"></div>
+
+            <div class="results-controls">
+              <div
+                id="results-category-filters"
+                class="filter-tabs"
+                role="group"
+                aria-label="Filter by category"
+              ></div>
+
+              <label for="results-sort-select" class="sr-only">Sort results</label>
+              <select id="results-sort-select" class="select-input">
+                <option value="relevance">Sort: Relevance</option>
+                <option value="newest">Sort: Newest</option>
+                <option value="title">Sort: Title A–Z</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="results-list-mount"></div>
+          <div id="results-pagination-mount"></div>
+        </section>
+
+        <aside id="results-aside-meta" class="results-aside" aria-label="Retrieval information"></aside>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/results.js"></script>
+  </body>
+</html>

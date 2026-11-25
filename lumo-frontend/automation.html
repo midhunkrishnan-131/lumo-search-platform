@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intelligence Automations — LUMO</title>
+    <meta
+      name="description"
+      content="Create, schedule, execute, and monitor bounded intelligence workflows in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Intelligence Automations</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Intelligence Automations</span>
+          </nav>
+          <h1 class="workspace-title">Intelligence Automation Engine</h1>
+          <p class="workspace-subtitle">
+            Build recurring, event-driven, and manual workflows combining LUMO Search, AI Synthesis,
+            Knowledge Graph, and Personal Workspace.
+          </p>
+        </div>
+
+        <div id="auto-status-banner" class="notice-banner" style="margin-bottom: 1.25rem; justify-content: space-between; align-items: center;">
+          <div id="auto-status-text">Loading automation dashboard...</div>
+          <button type="button" id="auto-refresh-btn" class="btn btn--secondary btn--sm">Refresh</button>
+        </div>
+
+        <div class="filter-tabs" role="tablist" aria-label="Automation sections" style="margin-bottom: 1.5rem;">
+          <button type="button" class="filter-tab" role="tab" data-auto-tab="dashboard" aria-pressed="true">Dashboard</button>
+          <button type="button" class="filter-tab" role="tab" data-auto-tab="builder" aria-pressed="false">Workflow Builder</button>
+          <button type="button" class="filter-tab" role="tab" data-auto-tab="executions" aria-pressed="false">Executions</button>
+          <button type="button" class="filter-tab" role="tab" data-auto-tab="notifications" aria-pressed="false">Notifications</button>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <section id="auto-panel-dashboard" class="auto-panel" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Quick-Start Templates</h2>
+            <div id="auto-templates-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Your Automations</h2>
+            <div id="auto-list-mount" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+          </div>
+        </section>
+
+        <!-- TAB: WORKFLOW BUILDER -->
+        <section id="auto-panel-builder" class="auto-panel" style="display: none;">
+          <div class="panel" style="display: flex; flex-direction: column; gap: 1rem;">
+            <h2 class="section-heading">Visual Workflow Builder</h2>
+            <form id="auto-builder-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+                <div>
+                  <label class="field-label" for="builder-name">Workflow Name</label>
+                  <input id="builder-name" type="text" class="text-input" placeholder="e.g., Weekly AI Security Monitor" required />
+                </div>
+                <div>
+                  <label class="field-label" for="builder-trigger-type">Trigger</label>
+                  <select id="builder-trigger-type" class="select-input">
+                    <option value="manual">Manual</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="event">Event-Based</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="builder-trigger-param">Topic / Interval / Event</label>
+                  <input id="builder-trigger-param" type="text" class="text-input" placeholder="daily | document_indexed | Topic" />
+                </div>
+              </div>
+
+              <div>
+                <label class="field-label" for="builder-desc">Description</label>
+                <input id="builder-desc" type="text" class="text-input" placeholder="What this automation monitors or produces..." />
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span class="field-label">Workflow Steps (Executed in Order)</span>
+                  <div style="display: flex; gap: 0.35rem;">
+                    <select id="builder-add-step-type" class="select-input" style="width: auto; font-size: 0.8125rem;">
+                      <option value="hybrid_search">Hybrid Search</option>
+                      <option value="search">Classic / Recent Search</option>
+                      <option value="semantic_search">Semantic Search</option>
+                      <option value="condition">Conditional Check</option>
+                      <option value="document_analysis">Document Analysis</option>
+                      <option value="ai_summarize">AI Summarization</option>
+                      <option value="report_generate">Report Generation</option>
+                      <option value="tag_assign">Assign Tags</option>
+                      <option value="workspace_save">Save to Workspace</option>
+                      <option value="notification">Send Notification</option>
+                    </select>
+                    <button type="button" id="builder-add-step-btn" class="btn btn--secondary btn--sm">+ Add Step</button>
+                  </div>
+                </div>
+                <div id="builder-steps-list" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+              </div>
+
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button type="submit" class="btn btn--primary btn--sm">Save Automation</button>
+                <span id="builder-feedback" class="field-hint"></span>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB: EXECUTIONS -->
+        <section id="auto-panel-executions" class="auto-panel" style="display: none;">
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Execution History &amp; Step Logs</h2>
+            <div id="auto-executions-mount" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+          </div>
+        </section>
+
+        <!-- TAB: NOTIFICATIONS -->
+        <section id="auto-panel-notifications" class="auto-panel" style="display: none;">
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Internal Automation Notifications</h2>
+            <div id="auto-notifications-mount" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/automation.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "LUMO",
+  "description": "Independent search, research, and web security intelligence platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

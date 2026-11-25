@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autonomous Research Agent — LUMO</title>
+    <meta
+      name="description"
+      content="Investigate complex questions with bounded steps, evidence evaluation, contradiction checks, and cited reports on LUMO."
+    />
+    <meta property="og:title" content="Autonomous Research Agent — LUMO" />
+    <meta
+      property="og:description"
+      content="Bounded autonomous research workspace prepared for LUMO FastAPI integration."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to research workspace</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Autonomous Research Agent</span>
+          </nav>
+          <h1 class="workspace-title">Autonomous Research Agent</h1>
+          <p class="workspace-subtitle">
+            Investigate complex questions through structured subquestions, bounded retrieval steps,
+            source comparisons, contradiction detection, and cited research reports.
+          </p>
+        </div>
+
+        <div class="notice-banner" style="margin-bottom: 1.5rem;">
+          <div>
+            <strong>FastAPI Autonomous Research Engine Ready (POST /api/v1/research)</strong> · Live
+            autonomous multi-step investigation executes through the LUMO Python backend with bounded step
+            caps, source limits, citation tracking, and audit logs.
+          </div>
+          <a href="./settings.html" class="text-link">Configure API</a>
+        </div>
+
+        <div class="split-grid">
+          <div class="panel-stack">
+            <section class="panel" aria-labelledby="research-form-heading">
+              <h2 id="research-form-heading" class="section-heading">Research question</h2>
+              <form id="research-form" class="panel-stack" style="gap: 1rem;" novalidate>
+                <div class="field-group">
+                  <label for="research-question-input" class="field-label">
+                    Complex question or topic to investigate
+                  </label>
+                  <textarea
+                    id="research-question-input"
+                    class="textarea-input"
+                    placeholder="Example: How does hybrid search balance lexical precision and semantic recall across technical documentation?"
+                  ></textarea>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                  <div class="field-group" style="min-width: 150px;">
+                    <label for="research-max-steps" class="field-label">Step limit</label>
+                    <select id="research-max-steps" class="select-input">
+                      <option value="3">Max 3 steps</option>
+                      <option value="5" selected>Max 5 steps</option>
+                      <option value="8">Max 8 steps</option>
+                      <option value="12">Max 12 steps</option>
+                    </select>
+                  </div>
+
+                  <div class="field-group" style="min-width: 150px;">
+                    <label for="research-max-sources" class="field-label">Source limit</label>
+                    <select id="research-max-sources" class="select-input">
+                      <option value="4">Max 4 sources</option>
+                      <option value="8" selected>Max 8 sources</option>
+                      <option value="15">Max 15 sources</option>
+                      <option value="20">Max 20 sources</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center;">
+                  <button type="submit" id="research-start-btn" class="btn btn--primary">
+                    Run via FastAPI
+                  </button>
+                  <button type="button" id="research-sample-btn" class="btn btn--secondary">
+                    Preview sample walkthrough
+                  </button>
+                  <button type="button" id="research-pause-btn" class="btn btn--secondary btn--sm" disabled>
+                    Pause
+                  </button>
+                  <button type="button" id="research-resume-btn" class="btn btn--secondary btn--sm" disabled>
+                    Resume
+                  </button>
+                  <button type="button" id="research-cancel-btn" class="btn btn--ghost btn--sm" disabled>
+                    Cancel
+                  </button>
+                </div>
+
+                <div id="research-feedback" class="field-hint" role="status" aria-live="polite"></div>
+              </form>
+            </section>
+
+            <section class="panel" aria-labelledby="research-plan-heading">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+                <h2 id="research-plan-heading" class="section-heading" style="margin: 0;">Research plan &amp; subquestions</h2>
+                <span id="research-status-label" class="field-hint"></span>
+              </div>
+              <div id="research-plan-mount">
+                <p class="field-hint">
+                  Submit a research question or preview the sample walkthrough to inspect the structured subquestion plan.
+                </p>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="research-progress-heading">
+              <h2 id="research-progress-heading" class="section-heading">Investigation progress &amp; audit trail</h2>
+              <div id="research-progress-mount">
+                <p class="field-hint">Bounded execution steps and audit events will appear here.</p>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="research-evidence-heading">
+              <h2 id="research-evidence-heading" class="section-heading">Evidence, contradictions &amp; missing information</h2>
+              <div id="research-evidence-mount">
+                <p class="field-hint">Cross-source evaluation and identified gaps will appear here.</p>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="research-report-heading">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+                <h2 id="research-report-heading" class="section-heading" style="margin: 0;">Final cited report</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" id="research-copy-report" class="btn btn--secondary btn--sm" disabled>
+                    Copy Markdown
+                  </button>
+                  <button type="button" id="research-save-workspace" class="btn btn--secondary btn--sm" disabled>
+                    Save to Workspace
+                  </button>
+                </div>
+              </div>
+              <div id="research-report-mount">
+                <p class="field-hint">No report generated yet.</p>
+              </div>
+            </section>
+          </div>
+
+          <aside class="panel-stack" aria-label="Sources and governance">
+            <section class="panel">
+              <h2 class="section-heading">Sources &amp; provenance</h2>
+              <div id="research-sources-mount">
+                <p class="field-hint">Evaluated sources and citations will be listed here.</p>
+              </div>
+            </section>
+
+            <section class="panel panel--subtle">
+              <h2 class="section-heading">Bounded execution guarantees</h2>
+              <div class="kv-list">
+                <div class="kv-row" style="grid-template-columns: 110px 1fr;">
+                  <span class="kv-key">Controls</span>
+                  <span class="kv-val">Pause, Resume, and Cancel at any step</span>
+                </div>
+                <div class="kv-row" style="grid-template-columns: 110px 1fr;">
+                  <span class="kv-key">Budgets</span>
+                  <span class="kv-val">Enforced step and source ceilings</span>
+                </div>
+                <div class="kv-row" style="grid-template-columns: 110px 1fr;">
+                  <span class="kv-key">Transparency</span>
+                  <span class="kv-val">Contradictions and missing data reported explicitly</span>
+                </div>
+                <div class="kv-row" style="grid-template-columns: 110px 1fr;">
+                  <span class="kv-key">API Route</span>
+                  <span class="kv-val mono" style="font-size: 0.72rem;">POST /api/v1/research</span>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/research.js"></script>
+  </body>
+</html>

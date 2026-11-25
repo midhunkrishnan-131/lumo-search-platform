@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>External Integrations — LUMO</title>
+    <meta
+      name="description"
+      content="Manage RSS/Atom feeds, GitHub repositories, technical documentation, open data, and public API integrations in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <style>
+      .int-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+      .int-stat { padding: 0.9rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); }
+      .int-stat-val { font-size: 1.45rem; font-weight: 700; }
+      .int-stat-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+      .int-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.15rem; margin-top: 1rem; }
+      @media (max-width: 960px) { .int-grid { grid-template-columns: 1fr; } }
+      .int-row { padding: 0.65rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+      .int-row:last-child { border-bottom: none; }
+      .int-badge { display: inline-block; padding: 0.16rem 0.55rem; border-radius: 999px; font-size: 0.74rem; background: var(--surface-muted); border: 1px solid var(--border-subtle); }
+      .int-perms { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to External Integrations</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>External Integrations</span>
+          </nav>
+          <h1 class="workspace-title">External Integration Layer</h1>
+          <p class="workspace-subtitle">
+            Connect RSS/Atom feeds, GitHub repositories, documentation sites, open datasets, and public APIs
+            with SSRF protection, explicit permissions, deduplication, and Knowledge Graph indexing.
+          </p>
+        </div>
+
+        <div id="int-banner" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+        <section class="int-stats" aria-label="Integration Overview">
+          <div class="int-stat"><div class="int-stat-val" id="int-stat-total">0</div><div class="int-stat-lbl">Registered</div></div>
+          <div class="int-stat"><div class="int-stat-val" id="int-stat-enabled">0</div><div class="int-stat-lbl">Enabled</div></div>
+          <div class="int-stat"><div class="int-stat-val" id="int-stat-disabled">0</div><div class="int-stat-lbl">Disabled</div></div>
+          <div class="int-stat"><div class="int-stat-val" id="int-stat-connected">0</div><div class="int-stat-lbl">Connected</div></div>
+        </section>
+
+        <div class="int-grid">
+          <section class="panel-card" aria-labelledby="int-registry-heading">
+            <h2 id="int-registry-heading">Integration Registry</h2>
+            <div id="int-registry-list">Loading integrations...</div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="int-detail-heading">
+            <h2 id="int-detail-heading">Configuration, Permissions &amp; Sync</h2>
+            <div id="int-selected-header" style="margin-bottom:0.65rem;">Select an integration on the left.</div>
+
+            <form id="int-config-form" class="stack-form">
+              <label for="int-cfg-freq">Sync Frequency (minutes)</label>
+              <input id="int-cfg-freq" type="number" min="5" max="10080" value="60" />
+
+              <label for="int-cfg-secret">Optional API Token (sealed at rest, never displayed)</label>
+              <input id="int-cfg-secret" type="password" placeholder="Leave blank to keep existing token" />
+
+              <label>Permissions</label>
+              <div id="int-perms-box" class="int-perms"></div>
+
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+                <button type="submit" class="btn-primary">Save Config</button>
+                <button id="int-test-btn" type="button" class="btn-secondary">Test Connection</button>
+                <button id="int-sync-btn" type="button" class="btn-primary">Sync Now</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div class="int-grid">
+          <section class="panel-card" aria-labelledby="int-sources-heading">
+            <h2 id="int-sources-heading">Monitored Sources</h2>
+            <form id="int-source-form" class="stack-form" style="margin-bottom:0.75rem;">
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <input id="int-src-name" type="text" placeholder="Source name (e.g. FastAPI Releases)" required style="flex:1;" />
+                <input id="int-src-url" type="text" placeholder="URL or owner/repo" required style="flex:1.4;" />
+                <button type="submit" class="btn-secondary">Add Source</button>
+              </div>
+            </form>
+            <div id="int-sources-list"></div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="int-history-heading">
+            <h2 id="int-history-heading">Sync History &amp; Imported Records</h2>
+            <div id="int-history-list"></div>
+            <h3 style="margin-top:0.9rem;">Recent Imported Items</h3>
+            <div id="int-records-list"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/integrations.js"></script>
+  </body>
+</html>

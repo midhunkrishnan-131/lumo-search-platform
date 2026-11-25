@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Workspace — LUMO</title>
+    <meta
+      name="description"
+      content="Organize saved documents, notes, collections, annotations, and personal AI search in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Personal Workspace</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Personal Workspace</span>
+          </nav>
+          <h1 class="workspace-title">Personal Workspace</h1>
+          <p class="workspace-subtitle">
+            Private, local-first knowledge base for saved pages, imported documents, notes,
+            annotations, and grounded personal AI search.
+          </p>
+        </div>
+
+        <div id="ws-stats-banner" class="notice-banner" style="margin-bottom: 1.25rem; justify-content: space-between; align-items: center;">
+          <div id="ws-stats-text">Loading workspace statistics...</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn--secondary btn--sm" data-ws-tab-jump="import">Import Document</button>
+            <button type="button" class="btn btn--primary btn--sm" data-ws-tab-jump="notes">New Note</button>
+          </div>
+        </div>
+
+        <div class="filter-tabs" role="tablist" aria-label="Workspace sections" style="margin-bottom: 1.5rem;">
+          <button type="button" class="filter-tab" role="tab" data-ws-tab="overview" aria-selected="true" aria-pressed="true">Overview &amp; Search</button>
+          <button type="button" class="filter-tab" role="tab" data-ws-tab="library" aria-selected="false" aria-pressed="false">Library &amp; Collections</button>
+          <button type="button" class="filter-tab" role="tab" data-ws-tab="notes" aria-selected="false" aria-pressed="false">Notes</button>
+          <button type="button" class="filter-tab" role="tab" data-ws-tab="import" aria-selected="false" aria-pressed="false">Import</button>
+        </div>
+
+        <!-- TAB: OVERVIEW & SEARCH -->
+        <section id="ws-panel-overview" class="ws-panel" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Search Personal Knowledge</h2>
+            <form id="ws-search-form" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <label for="ws-search-input" class="sr-only">Search personal workspace</label>
+              <input
+                id="ws-search-input"
+                type="search"
+                class="text-input"
+                style="flex: 1 1 260px;"
+                placeholder="Search saved items, notes, annotations, tags..."
+              />
+              <select id="ws-search-mode" class="select-input" style="width: auto;">
+                <option value="hybrid">Hybrid</option>
+                <option value="keyword">Keyword</option>
+                <option value="semantic">Semantic</option>
+              </select>
+              <button type="submit" class="btn btn--primary btn--sm">Search</button>
+            </form>
+            <div id="ws-search-results" style="margin-top: 1rem;"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="section-heading" style="margin-bottom: 0.75rem;">Ask Personal Knowledge AI</h2>
+            <form id="ws-ask-form" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <label for="ws-ask-input" class="sr-only">Ask a question about your saved workspace</label>
+              <input
+                id="ws-ask-input"
+                type="text"
+                class="text-input"
+                style="flex: 1 1 280px;"
+                placeholder="e.g., What did I save about Python or Hybrid Search?"
+              />
+              <button type="submit" class="btn btn--secondary btn--sm">Ask AI</button>
+            </form>
+            <div id="ws-ask-output" style="margin-top: 1rem;"></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <div class="panel">
+              <h2 class="section-heading" style="margin-bottom: 0.75rem;">Recently Added</h2>
+              <div id="ws-recent-items" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            </div>
+            <div class="panel">
+              <h2 class="section-heading" style="margin-bottom: 0.75rem;">Recently Viewed</h2>
+              <div id="ws-recent-viewed" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: LIBRARY & COLLECTIONS -->
+        <section id="ws-panel-library" class="ws-panel" style="display: none;">
+          <div class="graph-layout">
+            <aside class="panel" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div>
+                <h2 class="section-heading" style="margin-bottom: 0.5rem;">Collections</h2>
+                <form id="ws-collection-form" style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem;">
+                  <input id="ws-collection-name" type="text" class="text-input" placeholder="New collection..." style="flex: 1; font-size: 0.8125rem;" />
+                  <button type="submit" class="btn btn--secondary btn--sm">Add</button>
+                </form>
+                <div id="ws-collections-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+              </div>
+              <div>
+                <h3 class="field-label" style="margin-bottom: 0.35rem;">Tags</h3>
+                <div id="ws-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.35rem;"></div>
+              </div>
+            </aside>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div class="panel">
+                <h2 class="section-heading" style="margin-bottom: 0.75rem;">Saved Items</h2>
+                <div id="ws-library-items" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+              </div>
+              <div id="ws-item-viewer" class="panel" style="display: none;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: NOTES -->
+        <section id="ws-panel-notes" class="ws-panel" style="display: none;">
+          <div class="graph-layout">
+            <aside class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="section-heading">Notes</h2>
+                <button type="button" id="ws-new-note-btn" class="btn btn--primary btn--sm">+ New</button>
+              </div>
+              <div id="ws-notes-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+            </aside>
+
+            <div class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="ws-note-status" class="field-hint">Select or create a note (autosave enabled)</span>
+                <button type="button" id="ws-delete-note-btn" class="btn btn--ghost btn--sm" style="display: none;">Delete Note</button>
+              </div>
+              <input id="ws-note-title" type="text" class="text-input" placeholder="Note title..." />
+              <input id="ws-note-tags" type="text" class="text-input" placeholder="Tags (comma-separated)..." style="font-size: 0.8125rem;" />
+              <textarea
+                id="ws-note-content"
+                class="text-input"
+                rows="14"
+                style="font-family: var(--font-mono, monospace); font-size: 0.875rem; resize: vertical;"
+                placeholder="Write Markdown notes here..."
+              ></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: IMPORT -->
+        <section id="ws-panel-import" class="ws-panel" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+            <div class="panel">
+              <h2 class="section-heading" style="margin-bottom: 0.5rem;">Import Local Document</h2>
+              <p class="field-hint" style="margin-bottom: 1rem;">
+                Supports PDF, TXT, Markdown, HTML, and DOCX (max 25 MB). Processed locally without third-party uploads.
+              </p>
+              <form id="ws-file-import-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <input id="ws-import-file" type="file" accept=".pdf,.txt,.md,.markdown,.html,.htm,.docx" required />
+                <select id="ws-import-collection" class="select-input">
+                  <option value="">No collection</option>
+                </select>
+                <input id="ws-import-tags" type="text" class="text-input" placeholder="Tags (comma-separated)..." />
+                <button type="submit" class="btn btn--primary btn--sm">Import Document</button>
+              </form>
+              <div id="ws-file-import-status" class="field-hint" style="margin-top: 0.75rem;"></div>
+            </div>
+
+            <div class="panel">
+              <h2 class="section-heading" style="margin-bottom: 0.5rem;">Save Web Page by URL</h2>
+              <p class="field-hint" style="margin-bottom: 1rem;">
+                Fetches and extracts clean text using LUMO's SSRF-protected pipeline.
+              </p>
+              <form id="ws-url-import-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <input id="ws-import-url" type="url" class="text-input" placeholder="https://example.com/article" required />
+                <input id="ws-url-tags" type="text" class="text-input" placeholder="Tags (comma-separated)..." />
+                <button type="submit" class="btn btn--secondary btn--sm">Import URL</button>
+              </form>
+              <div id="ws-url-import-status" class="field-hint" style="margin-top: 0.75rem;"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/workspace.js"></script>
+  </body>
+</html>

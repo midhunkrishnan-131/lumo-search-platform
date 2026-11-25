@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Universal Data Intelligence — LUMO</title>
+    <meta
+      name="description"
+      content="Ingest PDFs, DOCX, spreadsheets, JSON datasets, web pages, and images with AI document intelligence, data profiling, and interactive charts in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <style>
+      .uni-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.25rem; }
+      @media (max-width: 960px) { .uni-grid { grid-template-columns: 1fr; } }
+      .uni-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+      .uni-stat-card { padding: 0.9rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); }
+      .uni-stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+      .uni-stat-lbl { font-size: 0.82rem; color: var(--text-secondary); }
+      .uni-output { margin-top: 0.9rem; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle); background: var(--surface-muted); white-space: pre-wrap; font-size: 0.92rem; line-height: 1.55; max-height: 360px; overflow: auto; }
+      .uni-chart-wrap { margin-top: 1rem; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); overflow-x: auto; }
+      .uni-chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.78rem; background: var(--surface-muted); border: 1px solid var(--border-subtle); }
+      .uni-row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+      .uni-check-list { max-height: 180px; overflow: auto; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Universal Data Intelligence</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Universal Data Intelligence</span>
+          </nav>
+          <h1 class="workspace-title">Universal Data Intelligence Engine</h1>
+          <p class="workspace-subtitle">
+            Ingest documents, PDFs, DOCX, CSV/XLSX spreadsheets, JSON datasets, web URLs, and images.
+            Profile data quality, ask the deterministic AI Data Analyst, visualize charts, and compare sources.
+          </p>
+        </div>
+
+        <div id="uni-banner" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+        <section class="uni-stats" aria-label="Universal Intelligence Overview">
+          <div class="uni-stat-card"><div class="uni-stat-val" id="stat-imports">0</div><div class="uni-stat-lbl">Total Imports</div></div>
+          <div class="uni-stat-card"><div class="uni-stat-val" id="stat-docs">0</div><div class="uni-stat-lbl">Documents &amp; Items</div></div>
+          <div class="uni-stat-card"><div class="uni-stat-val" id="stat-datasets">0</div><div class="uni-stat-lbl">Datasets &amp; Sheets</div></div>
+          <div class="uni-stat-card"><div class="uni-stat-val" id="stat-reports">0</div><div class="uni-stat-lbl">Intelligence Reports</div></div>
+          <div class="uni-stat-card"><div class="uni-stat-val" id="stat-providers" style="font-size:0.95rem;">Checking...</div><div class="uni-stat-lbl">AI Provider Router</div></div>
+        </section>
+
+        <!-- Ingestion Panel -->
+        <section class="panel-card" aria-labelledby="ingest-heading">
+          <h2 id="ingest-heading">Universal Data Ingestion</h2>
+          <div class="uni-grid">
+            <form id="uni-file-form" class="stack-form">
+              <label for="uni-file-input">Upload File (PDF, DOCX, TXT, MD, HTML, CSV, XLSX, JSON, JSONL, PNG, JPG, WebP)</label>
+              <input id="uni-file-input" type="file" required />
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
+                <label><input id="uni-classify-ai" type="checkbox" /> AI-assisted classification</label>
+                <select id="uni-provider-select" aria-label="AI Provider">
+                  <option value="auto">Provider: Auto</option>
+                  <option value="gemini">Gemini</option>
+                  <option value="grok">Grok</option>
+                  <option value="ollama">Local Ollama</option>
+                </select>
+                <button type="submit" class="btn-primary">Ingest &amp; Process</button>
+              </div>
+            </form>
+
+            <form id="uni-url-form" class="stack-form">
+              <label for="uni-url-input">Import Web URL (SSRF-screened)</label>
+              <input id="uni-url-input" type="url" placeholder="https://example.com/article" required />
+              <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                <input id="uni-url-title" type="text" placeholder="Optional title override" style="flex:1;" />
+                <button type="submit" class="btn-secondary">Import URL</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <div class="uni-grid">
+          <!-- Document Intelligence -->
+          <section class="panel-card" aria-labelledby="doc-intel-heading">
+            <h2 id="doc-intel-heading">Document Intelligence</h2>
+            <div class="stack-form">
+              <label for="uni-doc-select">Select Document / Workspace Item</label>
+              <select id="uni-doc-select"></select>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+                <select id="uni-doc-mode" aria-label="Analysis Mode">
+                  <option value="summarize">Summarize</option>
+                  <option value="explain">Explain</option>
+                  <option value="qa">Ask Question</option>
+                  <option value="key_info">Extract Key Info</option>
+                  <option value="entities">Extract Entities</option>
+                  <option value="dates">Extract Important Dates</option>
+                  <option value="topics">Extract Topics</option>
+                  <option value="faq">Generate FAQs</option>
+                  <option value="study_notes">Generate Study Notes</option>
+                  <option value="action_items">Generate Action Items</option>
+                  <option value="report">Structured Report</option>
+                </select>
+                <input id="uni-doc-question" type="text" placeholder="Optional question (for Q&A)..." style="flex:1;" />
+                <button id="uni-doc-analyze-btn" type="button" class="btn-primary">Analyze</button>
+              </div>
+            </div>
+            <div id="uni-doc-output" class="uni-output" hidden></div>
+          </section>
+
+          <!-- Cross-Document Intelligence -->
+          <section class="panel-card" aria-labelledby="cross-intel-heading">
+            <h2 id="cross-intel-heading">Cross-Document Intelligence</h2>
+            <p style="font-size:0.88rem; color:var(--text-secondary);">Select 2 or more documents/datasets to compare themes, entities, and differences.</p>
+            <div id="uni-cross-list" class="uni-check-list"></div>
+            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+              <input id="uni-cross-question" type="text" placeholder="Optional focus (e.g. compare findings or contradictions)" style="flex:1;" />
+              <button id="uni-cross-btn" type="button" class="btn-primary">Compare Selected</button>
+            </div>
+            <div id="uni-cross-output" class="uni-output" hidden></div>
+          </section>
+        </div>
+
+        <!-- Dataset Intelligence, AI Data Analyst & Visualization -->
+        <section class="panel-card" style="margin-top:1.25rem;" aria-labelledby="dataset-intel-heading">
+          <h2 id="dataset-intel-heading">Spreadsheet &amp; Dataset Intelligence + AI Data Analyst</h2>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+            <select id="uni-ds-select" style="min-width:240px;"></select>
+            <select id="uni-ds-sheet" aria-label="Sheet selector" hidden></select>
+            <span id="uni-ds-summary" class="uni-chip">No dataset selected</span>
+          </div>
+
+          <div id="uni-ds-profile" class="uni-output" hidden></div>
+
+          <div class="uni-grid">
+            <div>
+              <h3>AI Data Analyst (Deterministic + AI)</h3>
+              <div style="display:flex; gap:0.5rem;">
+                <input id="uni-ds-question" type="text" placeholder="e.g. Which category has highest value? Any missing values or outliers?" style="flex:1;" />
+                <button id="uni-ds-ask-btn" type="button" class="btn-primary">Ask Analyst</button>
+              </div>
+              <div id="uni-ds-answer" class="uni-output" hidden></div>
+            </div>
+
+            <div>
+              <h3>Data Visualization</h3>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <select id="uni-chart-type" aria-label="Chart Type">
+                  <option value="bar">Bar Chart</option>
+                  <option value="line">Line Chart</option>
+                  <option value="pie">Pie Chart</option>
+                  <option value="histogram">Histogram</option>
+                  <option value="scatter">Scatter Plot</option>
+                </select>
+                <select id="uni-chart-x" aria-label="X Column"></select>
+                <select id="uni-chart-y" aria-label="Y Column"></select>
+                <button id="uni-chart-btn" type="button" class="btn-primary">Render Chart</button>
+                <button id="uni-chart-export-btn" type="button" class="btn-secondary" hidden>Export SVG</button>
+              </div>
+              <div id="uni-chart-suggestions" style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.5rem;"></div>
+              <div id="uni-chart-container" class="uni-chart-wrap" hidden></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Imports & Reports Tables -->
+        <div class="uni-grid">
+          <section class="panel-card" aria-labelledby="imports-list-heading">
+            <h2 id="imports-list-heading">Recent Imports &amp; Processing Jobs</h2>
+            <div id="uni-imports-list"></div>
+          </section>
+
+          <section class="panel-card" aria-labelledby="reports-list-heading">
+            <h2 id="reports-list-heading">Intelligence Reports History</h2>
+            <div id="uni-reports-list"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/intelligence.js"></script>
+  </body>
+</html>

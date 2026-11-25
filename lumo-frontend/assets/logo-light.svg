@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 40" width="156" height="40" role="img" aria-label="LUMO">
+  <title>LUMO</title>
+  <!-- Geometric four-point folded ribbon/star symbol -->
+  <g fill="#111111">
+    <!-- North folded ribbon arm -->
+    <path d="M20 2 L24.6 14.0 L20.4 15.6 L18.6 10.6 L14.8 14.2 L13.2 12.6 Z" />
+    <!-- East folded ribbon arm -->
+    <path d="M38 20 L26.0 24.6 L24.4 20.4 L29.4 18.6 L25.8 14.8 L27.4 13.2 Z" />
+    <!-- South folded ribbon arm -->
+    <path d="M20 38 L15.4 26.0 L19.6 24.4 L21.4 29.4 L25.2 25.8 L26.8 27.4 Z" />
+    <!-- West folded ribbon arm -->
+    <path d="M2 20 L14.0 15.4 L15.6 19.6 L10.6 21.4 L14.2 25.2 L12.6 26.8 Z" />
+  </g>
+  <!-- Bold geometric uppercase LUMO wordmark -->
+  <g fill="#111111" transform="translate(50, 10)">
+    <!-- L -->
+    <path d="M0 0 H4.2 V16.2 H13.8 V20 H0 Z" />
+    <!-- U -->
+    <path d="M18.6 0 H22.8 V11.4 C22.8 14.7 24.8 16.5 27.8 16.5 C30.8 16.5 32.8 14.7 32.8 11.4 V0 H37.0 V11.7 C37.0 17.2 33.4 20.4 27.8 20.4 C22.2 20.4 18.6 17.2 18.6 11.7 Z" />
+    <!-- M -->
+    <path d="M43.2 0 H48.2 L54.6 11.8 L61.0 0 H66.0 V20 H61.8 V6.8 L56.0 17.4 H53.2 L47.4 6.8 V20 H43.2 Z" />
+    <!-- O -->
+    <path fill-rule="evenodd" d="M82.4 -0.4 C88.6 -0.4 93.2 4.0 93.2 10.0 C93.2 16.0 88.6 20.4 82.4 20.4 C76.2 20.4 71.6 16.0 71.6 10.0 C71.6 4.0 76.2 -0.4 82.4 -0.4 Z M82.4 3.4 C78.5 3.4 75.9 6.1 75.9 10.0 C75.9 13.9 78.5 16.6 82.4 16.6 C86.3 16.6 88.9 13.9 88.9 10.0 C88.9 6.1 86.3 3.4 82.4 3.4 Z" />
+  </g>
+</svg>

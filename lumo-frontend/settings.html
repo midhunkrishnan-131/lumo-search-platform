@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings — LUMO</title>
+    <meta
+      name="description"
+      content="Manage appearance themes, search preferences, interface options, and FastAPI backend settings for LUMO."
+    />
+    <meta property="og:title" content="Settings — LUMO" />
+    <meta
+      property="og:description"
+      content="Configure appearance, search defaults, and backend integration in LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to settings</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container workspace-container--narrow">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Settings</span>
+          </nav>
+          <h1 class="workspace-title">Settings</h1>
+          <p class="workspace-subtitle">
+            Manage appearance themes, search preferences, and backend connection settings.
+          </p>
+        </div>
+
+        <div id="settings-feedback" class="field-hint" role="status" aria-live="polite" style="min-height: 1.25rem; margin-bottom: 1rem;"></div>
+
+        <!-- APPEARANCE -->
+        <section class="settings-group" aria-labelledby="settings-appearance-heading">
+          <h2 id="settings-appearance-heading" class="section-heading">Appearance</h2>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Theme</span>
+              <span class="setting-desc">
+                Active mode: <strong data-theme-status>System</strong>. System follows your device
+                appearance automatically.
+              </span>
+            </div>
+
+            <div class="segmented-control" role="group" aria-label="Theme preference">
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-theme-option="system"
+                aria-pressed="false"
+              >
+                System
+              </button>
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-theme-option="light"
+                aria-pressed="false"
+              >
+                Light
+              </button>
+              <button
+                type="button"
+                class="segmented-control__btn"
+                data-theme-option="dark"
+                aria-pressed="false"
+              >
+                Dark
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEARCH PREFERENCES -->
+        <section class="settings-group" aria-labelledby="settings-search-heading">
+          <h2 id="settings-search-heading" class="section-heading">Search preferences</h2>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="setting-default-mode" class="setting-title">Default search mode</label>
+              <span class="setting-desc">Selected automatically when opening LUMO.</span>
+            </div>
+            <select id="setting-default-mode" class="select-input">
+              <option value="classic">Classic (Keyword)</option>
+              <option value="semantic">Semantic (Meaning)</option>
+              <option value="hybrid">Hybrid (Recommended)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span id="suggestions-label" class="setting-title">Search suggestions</span>
+              <span class="setting-desc">Show matching suggestions as you type in the search bar.</span>
+            </div>
+            <button
+              type="button"
+              id="setting-suggestions-toggle"
+              class="toggle-switch"
+              role="switch"
+              aria-checked="true"
+              aria-labelledby="suggestions-label"
+            >
+              <span class="toggle-switch__thumb"></span>
+            </button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="setting-results-per-page" class="setting-title">Results per page</label>
+              <span class="setting-desc">Number of search results displayed per page.</span>
+            </div>
+            <select id="setting-results-per-page" class="select-input">
+              <option value="5">5 results</option>
+              <option value="8">8 results</option>
+              <option value="10">10 results</option>
+              <option value="20">20 results</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- GENERAL -->
+        <section class="settings-group" aria-labelledby="settings-general-heading">
+          <h2 id="settings-general-heading" class="section-heading">General</h2>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="setting-language" class="setting-title">Language</label>
+              <span class="setting-desc">Preferred interface and date formatting language.</span>
+            </div>
+            <select id="setting-language" class="select-input">
+              <option value="en">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span id="compact-label" class="setting-title">Compact interface spacing</span>
+              <span class="setting-desc">Tighter vertical spacing across workspaces and lists.</span>
+            </div>
+            <button
+              type="button"
+              id="setting-compact-toggle"
+              class="toggle-switch"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="compact-label"
+            >
+              <span class="toggle-switch__thumb"></span>
+            </button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span id="motion-label" class="setting-title">Reduce interface motion</span>
+              <span class="setting-desc">Disables subtle transitions in addition to system preference.</span>
+            </div>
+            <button
+              type="button"
+              id="setting-motion-toggle"
+              class="toggle-switch"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="motion-label"
+            >
+              <span class="toggle-switch__thumb"></span>
+            </button>
+          </div>
+        </section>
+
+        <!-- FASTAPI GATEWAY -->
+        <section class="settings-group" aria-labelledby="settings-api-heading">
+          <h2 id="settings-api-heading" class="section-heading">FastAPI backend integration</h2>
+          <p class="section-desc">
+            All browser requests route strictly through the LUMO Python FastAPI gateway. Leave blank
+            to keep sample demonstration mode active.
+          </p>
+
+          <form id="setting-api-form" class="panel-stack" style="gap: 0.75rem;">
+            <div class="field-group">
+              <label for="setting-api-url" class="field-label">FastAPI Base URL</label>
+              <input
+                id="setting-api-url"
+                class="text-input mono"
+                type="url"
+                placeholder="http://localhost:8000"
+              />
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+              <button type="submit" class="btn btn--primary btn--sm">Save endpoint</button>
+              <button type="button" id="setting-api-test" class="btn btn--secondary btn--sm">Test connection</button>
+              <button type="button" id="setting-api-clear" class="btn btn--ghost btn--sm">Use sample mode</button>
+            </div>
+            <div id="setting-api-status" class="field-hint"></div>
+            <div id="setting-diagnostics-panel" class="panel panel--subtle" style="display: none; margin-top: 0.75rem;"></div>
+          </form>
+        </section>
+
+        <!-- LOCAL AI & MODEL MANAGEMENT -->
+        <section class="settings-group" aria-labelledby="settings-local-ai-heading">
+          <h2 id="settings-local-ai-heading" class="section-heading">Local AI &amp; Ollama Models</h2>
+          <div class="panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div id="setting-local-ai-status" class="field-hint">Checking local Ollama server...</div>
+            <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
+              <input id="setting-local-only-toggle" type="checkbox" />
+              <span><strong>Local-Only Privacy Mode</strong> (block external Gemini/Grok routing)</span>
+            </label>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+              <select id="setting-ollama-model-select" class="select-input" style="flex: 1 1 200px;"></select>
+              <button type="button" id="setting-ollama-save-btn" class="btn btn--primary btn--sm">Set Preferred Model</button>
+              <button type="button" id="setting-ollama-test-btn" class="btn btn--secondary btn--sm">Test Model</button>
+            </div>
+            <div id="setting-ollama-models-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+          </div>
+        </section>
+
+        <!-- ABOUT LUMO -->
+        <section class="settings-group" aria-labelledby="settings-about-heading">
+          <h2 id="settings-about-heading" class="section-heading">About LUMO</h2>
+          <div class="panel panel--subtle">
+            <div class="kv-list">
+              <div class="kv-row">
+                <span class="kv-key">Platform</span>
+                <span class="kv-val">LUMO — Independent Search &amp; Intelligence</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-key">Philosophy</span>
+                <span class="kv-val">Simple on the surface. Powerful underneath.</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-key">Frontend Stack</span>
+                <span class="kv-val">HTML5, CSS3, Vanilla JavaScript (ES Modules)</span>
+              </div>
+              <div class="kv-row">
+                <span class="kv-key">Backend Target</span>
+                <span class="kv-val">Python FastAPI gateway (OpenSearch, Qdrant, PostgreSQL, Redis, Ollama)</span>
+              </div>
+            </div>
+            <div style="margin-top: 1rem;">
+              <button type="button" id="setting-reset-all" class="btn btn--secondary btn--sm">
+                Reset all preferences to defaults
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/settings.js"></script>
+  </body>
+</html>

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intelligence Command Center — LUMO</title>
+    <meta
+      name="description"
+      content="LUMO Intelligence Command Center: unified overview of Search, AI, Research, Automations, Universal Data, Knowledge Graph, Guardian, and System Health."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <style>
+      .cc-hero { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: flex-end; }
+      .cc-search-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+      .cc-search-bar input { flex: 1; min-width: 220px; }
+      .cc-quick-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
+      .cc-quick-actions a { text-decoration: none; }
+      .cc-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 0.75rem; margin: 1.15rem 0; }
+      .cc-kpi { padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); }
+      .cc-kpi-val { font-size: 1.45rem; font-weight: 700; color: var(--text-primary); }
+      .cc-kpi-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+      .cc-panels-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.15rem; margin-top: 1rem; }
+      @media (max-width: 960px) { .cc-panels-grid { grid-template-columns: 1fr; } }
+      .cc-panel-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+      .cc-panel-head h2 { margin: 0; font-size: 1.08rem; }
+      .cc-list-row { padding: 0.55rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+      .cc-list-row:last-child { border-bottom: none; }
+      .cc-badge { display: inline-block; padding: 0.16rem 0.5rem; border-radius: 999px; font-size: 0.74rem; background: var(--surface-muted); border: 1px solid var(--border-subtle); }
+      .cc-customizer { margin-top: 0.9rem; padding: 0.9rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-muted); }
+      .cc-custom-row { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0; gap: 0.5rem; }
+      .cc-empty { color: var(--text-secondary); font-size: 0.88rem; }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Intelligence Command Center</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="cc-hero">
+          <div>
+            <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+              <a href="./index.html">LUMO</a>
+              <span aria-hidden="true">/</span>
+              <span>Intelligence Command Center</span>
+            </nav>
+            <h1 class="workspace-title" id="cc-greeting">LUMO Intelligence Command Center</h1>
+            <p class="workspace-subtitle" id="cc-date-sub">Unified operational overview across all LUMO engines.</p>
+          </div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button id="cc-refresh-btn" type="button" class="btn-secondary">Refresh All</button>
+            <button id="cc-customize-btn" type="button" class="btn-secondary">Customize Layout</button>
+          </div>
+        </div>
+
+        <div id="cc-banner" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+        <!-- Global Search & Quick Actions -->
+        <section class="panel-card" aria-label="Global Search and Quick Actions">
+          <form id="cc-search-form" class="cc-search-bar">
+            <input id="cc-search-input" type="search" placeholder="Search web index, semantic vectors, AI Search, or Personal Workspace..." required />
+            <select id="cc-search-mode" aria-label="Search Mode">
+              <option value="hybrid">Hybrid Search</option>
+              <option value="classic">Classic Search</option>
+              <option value="semantic">Semantic Search</option>
+              <option value="ai">AI Search</option>
+              <option value="workspace">Personal Workspace</option>
+            </select>
+            <button type="submit" class="btn-primary">Search</button>
+          </form>
+
+          <div class="cc-quick-actions" aria-label="Quick Actions">
+            <a class="btn-secondary" href="./research.html">Start Research</a>
+            <a class="btn-secondary" href="./intelligence.html">Import Document / Dataset</a>
+            <a class="btn-secondary" href="./guardian.html?tab=url">Analyze URL / File</a>
+            <a class="btn-secondary" href="./automation.html">Create Automation</a>
+            <a class="btn-secondary" href="./graph.html">Knowledge Graph</a>
+            <a class="btn-secondary" href="./workspace.html">Personal Workspace</a>
+            <a class="btn-secondary" href="./local-ai.html">Local AI</a>
+            <a class="btn-secondary" href="./personalization.html">Personalization</a>
+          </div>
+        </section>
+
+        <!-- Layout Customizer -->
+        <section id="cc-customizer" class="cc-customizer" hidden aria-label="Dashboard Customization">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <strong>Customize Command Center Panels</strong>
+            <button id="cc-reset-layout-btn" type="button" class="btn-secondary">Reset Default Layout</button>
+          </div>
+          <div id="cc-customizer-list"></div>
+        </section>
+
+        <!-- Platform Overview KPIs -->
+        <section class="cc-kpi-grid" aria-label="Platform Overview Metrics">
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-web-docs">0</div><div class="cc-kpi-lbl">Indexed Web Docs</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-ws-docs">0</div><div class="cc-kpi-lbl">Personal Items</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-research">0</div><div class="cc-kpi-lbl">Research Reports</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-kg">0</div><div class="cc-kpi-lbl">Knowledge Entities</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-autos">0</div><div class="cc-kpi-lbl">Active Automations</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-datasets">0</div><div class="cc-kpi-lbl">Datasets &amp; Reports</div></div>
+          <div class="cc-kpi"><div class="cc-kpi-val" id="kpi-notifs">0</div><div class="cc-kpi-lbl">Unread Alerts</div></div>
+        </section>
+
+        <!-- Modular Panels Grid -->
+        <div id="cc-panels-grid" class="cc-panels-grid"></div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/command-center.js"></script>
+  </body>
+</html>

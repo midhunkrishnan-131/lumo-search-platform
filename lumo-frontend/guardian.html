@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download Guardian &amp; Security Analysis — LUMO</title>
+    <meta
+      name="description"
+      content="Inspect URLs, redirect chains, SSRF boundaries, and cryptographic file hashes with LUMO Download Guardian."
+    />
+    <meta property="og:title" content="Download Guardian &amp; Security Analysis — LUMO" />
+    <meta
+      property="og:description"
+      content="Safe URL inspection, redirect analysis, and local SHA-256 file verification on LUMO."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to security workspace</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Download Guardian &amp; Security Analysis</span>
+          </nav>
+          <h1 class="workspace-title">Download Guardian</h1>
+          <p class="workspace-subtitle">
+            Validate URLs, enforce SSRF boundaries, inspect file metadata and SHA-256 hashes, and
+            prepare threat intelligence lookups via the LUMO FastAPI security gateway.
+          </p>
+        </div>
+
+        <div class="tab-bar" role="tablist" aria-label="Security analysis modules">
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            id="tab-download"
+            aria-controls="panel-download"
+            aria-selected="true"
+            data-guardian-tab="download"
+          >
+            Download Guardian
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            id="tab-url"
+            aria-controls="panel-url"
+            aria-selected="false"
+            data-guardian-tab="url"
+          >
+            URL Security Analysis
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            id="tab-file"
+            aria-controls="panel-file"
+            aria-selected="false"
+            data-guardian-tab="file"
+          >
+            File Security Analysis
+          </button>
+        </div>
+
+        <!-- TAB 1: DOWNLOAD GUARDIAN -->
+        <section id="panel-download" role="tabpanel" aria-labelledby="tab-download" class="panel-stack">
+          <div class="panel">
+            <h2 class="section-heading">Inspect download URL</h2>
+            <p class="section-desc">
+              Submit a public HTTP or HTTPS link. Private networks, loopback addresses, and internal
+              hostnames are blocked automatically to prevent SSRF.
+            </p>
+
+            <form id="dg-url-form" style="display: flex; flex-wrap: wrap; gap: 0.75rem;" novalidate>
+              <label for="dg-url-input" class="sr-only">Download URL to inspect</label>
+              <input
+                id="dg-url-input"
+                class="text-input"
+                style="flex: 1 1 320px;"
+                type="url"
+                placeholder="https://example.org/releases/package-2.4.tar.gz"
+              />
+              <button type="submit" class="btn btn--primary">Inspect URL</button>
+            </form>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; align-items: center;">
+              <span class="field-hint">Examples:</span>
+              <button
+                type="button"
+                class="quick-prompt-btn"
+                data-test-url="https://example.org/downloads/release-notes.pdf"
+                data-test-target="download"
+              >
+                Public PDF link
+              </button>
+              <span class="field-hint" aria-hidden="true">·</span>
+              <button
+                type="button"
+                class="quick-prompt-btn"
+                data-test-url="http://127.0.0.1:8080/internal-admin"
+                data-test-target="download"
+              >
+                Test SSRF block (127.0.0.1)
+              </button>
+            </div>
+
+            <div id="dg-url-feedback" class="search-feedback" role="status" aria-live="polite"></div>
+          </div>
+
+          <div id="dg-url-output">
+            <div class="panel panel--subtle">
+              <h3 class="section-heading">Security scanning principles</h3>
+              <div class="kv-list">
+                <div class="kv-row">
+                  <span class="kv-key">Honest Verdicts</span>
+                  <span class="kv-val">LUMO never fabricates scan results. Without the FastAPI scanner connected, remote risk always reports as Unknown.</span>
+                </div>
+                <div class="kv-row">
+                  <span class="kv-key">Risk Scale</span>
+                  <span class="kv-val">Low Risk · Suspicious · Malicious · Unknown (Low Risk is never an absolute guarantee of safety).</span>
+                </div>
+                <div class="kv-row">
+                  <span class="kv-key">SSRF &amp; Safety Limits</span>
+                  <span class="kv-val">Blocks private/loopback networks, enforces strict redirect and response-size caps on the backend.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: URL SECURITY ANALYSIS -->
+        <section id="panel-url" role="tabpanel" aria-labelledby="tab-url" class="panel-stack" hidden>
+          <div class="panel">
+            <h2 class="section-heading">Analyse suspicious link</h2>
+            <p class="section-desc">
+              Checks URL structure, scheme security, internationalized Punycode (xn--) lookalikes,
+              obfuscated credentials, and SSRF rules locally, then routes to FastAPI
+              <span class="mono">POST /api/v1/guardian/url</span> when connected.
+            </p>
+
+            <form id="urlsec-form" style="display: flex; flex-wrap: wrap; gap: 0.75rem;" novalidate>
+              <label for="urlsec-input" class="sr-only">Suspicious URL to analyse</label>
+              <input
+                id="urlsec-input"
+                class="text-input"
+                style="flex: 1 1 320px;"
+                type="url"
+                placeholder="https://xn--exmple-cua.org/login?redirect=true"
+              />
+              <button type="submit" class="btn btn--primary">Analyse Link</button>
+            </form>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; align-items: center;">
+              <span class="field-hint">Examples:</span>
+              <button
+                type="button"
+                class="quick-prompt-btn"
+                data-test-url="http://xn--exmple-cua.org/verify-account"
+                data-test-target="urlsec"
+              >
+                HTTP + Punycode example
+              </button>
+              <span class="field-hint" aria-hidden="true">·</span>
+              <button
+                type="button"
+                class="quick-prompt-btn"
+                data-test-url="http://169.254.169.254/latest/meta-data/"
+                data-test-target="urlsec"
+              >
+                Test cloud metadata SSRF block
+              </button>
+            </div>
+
+            <div id="urlsec-feedback" class="search-feedback" role="status" aria-live="polite"></div>
+          </div>
+
+          <div id="urlsec-output"></div>
+        </section>
+
+        <!-- TAB 3: FILE SECURITY ANALYSIS -->
+        <section id="panel-file" role="tabpanel" aria-labelledby="tab-file" class="panel-stack" hidden>
+          <div class="notice-banner">
+            <div>
+              <strong>Important Notice</strong> · Selecting or uploading a file does not make it safe.
+              LUMO computes your file's SHA-256 cryptographic hash locally in the browser using Web
+              Crypto and only sends hash metadata to FastAPI (<span class="mono">POST /api/v1/guardian/file</span>)
+              when a backend is configured.
+            </div>
+          </div>
+
+          <div class="panel">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
+              <h2 class="section-heading" style="margin: 0;">Select file for local metadata &amp; SHA-256 inspection</h2>
+              <span id="file-analysis-status" class="field-hint">Not scanned</span>
+            </div>
+
+            <div id="file-dropzone" class="dropzone">
+              <p class="field-label">Drop a file here or choose from your device</p>
+              <p class="field-hint">
+                File contents stay on your device during local SHA-256 hashing. Supported status
+                states: Not scanned, Scanning, Completed, Failed, Unknown.
+              </p>
+              <input id="file-security-input" type="file" hidden />
+              <button type="button" id="file-select-btn" class="btn btn--primary btn--sm">
+                Choose file
+              </button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+              <h2 class="section-heading" style="margin: 0;">File security findings</h2>
+              <button type="button" id="file-download-report" class="btn btn--secondary btn--sm" disabled>
+                Download JSON report
+              </button>
+            </div>
+            <div id="file-report-mount">
+              <p class="field-hint">
+                No file selected yet. Select a file above to inspect its size, MIME type, and SHA-256
+                digest.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/guardian.js"></script>
+  </body>
+</html>

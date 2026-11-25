@@ -1,0 +1,38 @@
+# Python virtual environments & bytecode
+backend/.venv/
+backend/venv/
+.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Sensitive environment files
+backend/.env
+.env
+
+# Logs
+*.log
+
+# Node & Frontend build artifacts
+lumo-frontend/node_modules/
+lumo-frontend/dist/
+node_modules/
+dist/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+backups/
+backend/logs/
+
+# Local databases, personal data, and vector storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/data/
+backend/qdrant_storage/
+lumo-frontend/.env

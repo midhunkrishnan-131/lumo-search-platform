@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer Portal &amp; API — LUMO</title>
+    <meta
+      name="description"
+      content="LUMO Intelligence API & Developer Portal: API keys, granular permissions, usage monitoring, OpenAPI docs, and Python SDK."
+    />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('lumo_theme_preference') || 'system';
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', pref);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <style>
+      .dev-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+      .dev-stat { padding: 0.9rem 1rem; border-radius: 12px; border: 1px solid var(--border-subtle); background: var(--surface-card); }
+      .dev-stat-val { font-size: 1.45rem; font-weight: 700; }
+      .dev-stat-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+      .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.15rem; margin-top: 1rem; }
+      @media (max-width: 960px) { .dev-grid { grid-template-columns: 1fr; } }
+      .dev-row { padding: 0.65rem 0; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+      .dev-row:last-child { border-bottom: none; }
+      .dev-badge { display: inline-block; padding: 0.16rem 0.55rem; border-radius: 999px; font-size: 0.74rem; background: var(--surface-muted); border: 1px solid var(--border-subtle); }
+      .dev-perms { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 0.35rem; margin: 0.5rem 0; font-size: 0.84rem; }
+      .dev-secret-box { padding: 0.9rem 1rem; border-radius: 10px; border: 1px solid #f59e0b; background: var(--surface-muted); margin: 0.75rem 0; font-family: 'IBM Plex Mono', monospace; word-break: break-all; }
+      .dev-code { padding: 0.9rem; border-radius: 10px; background: var(--surface-muted); border: 1px solid var(--border-subtle); font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; white-space: pre-wrap; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to Developer Portal</a>
+    <header id="lumo-header"></header>
+
+    <main id="main-content" class="page-main">
+      <div class="workspace-container">
+        <div class="workspace-header">
+          <nav class="workspace-breadcrumb" aria-label="Breadcrumb">
+            <a href="./index.html">LUMO</a>
+            <span aria-hidden="true">/</span>
+            <span>Developer Portal &amp; API</span>
+          </nav>
+          <h1 class="workspace-title">LUMO Intelligence API &amp; Developer Portal</h1>
+          <p class="workspace-subtitle">
+            Generate scoped API keys, inspect usage &amp; rate limits, explore OpenAPI docs, and integrate using the Python SDK.
+            <a id="dev-openapi-link" href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">OpenAPI Interactive Docs →</a>
+          </p>
+        </div>
+
+        <div id="dev-banner" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+        <div id="dev-new-key-box" class="dev-secret-box" hidden>
+          <div><strong>One-Time API Key (copy now — never shown again):</strong></div>
+          <div id="dev-new-key-val" style="margin:0.4rem 0; font-weight:600;"></div>
+          <button id="dev-copy-key-btn" type="button" class="btn-secondary">Copy Key</button>
+        </div>
+
+        <section class="dev-stats" aria-label="API Usage Overview">
+          <div class="dev-stat"><div class="dev-stat-val" id="stat-total-req">0</div><div class="dev-stat-lbl">Total API Requests</div></div>
+          <div class="dev-stat"><div class="dev-stat-val" id="stat-ok-req">0</div><div class="dev-stat-lbl">Successful (2xx/3xx)</div></div>
+          <div class="dev-stat"><div class="dev-stat-val" id="stat-err-req">0</div><div class="dev-stat-lbl">Failed (4xx/5xx)</div></div>
+          <div class="dev-stat"><div class="dev-stat-val" id="stat-rl-req">0</div><div class="dev-stat-lbl">Rate Limited (429)</div></div>
+        </section>
+
+        <div class="dev-grid">
+          <section class="panel-card" aria-labelledby="dev-create-heading">
+            <h2 id="dev-create-heading">Create Scoped API Key</h2>
+            <form id="dev-key-form" class="stack-form">
+              <label for="dev-key-name">Key Name</label>
+              <input id="dev-key-name" type="text" placeholder="e.g. Research CLI Client" required />
+
+              <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+                <div>
+                  <label for="dev-key-rpm">Rate Limit (req/min)</label>
+                  <input id="dev-key-rpm" type="number" min="5" max="1000" value="60" />
+                </div>
+                <div>
+                  <label for="dev-key-exp">Expires in Days (optional)</label>
+                  <input id="dev-key-exp" type="number" min="1" max="3650" placeholder="Never" />
+                </div>
+              </div>
+
+              <label style="margin-top:0.5rem;">Permissions</label>
+              <div id="dev-perms-grid" class="dev-perms"></div>
+
+              <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Generate API Key</button>
+            </form>
+          </section>
+
+          <section class="panel-card" aria-labelledby="dev-keys-heading">
+            <h2 id="dev-keys-heading">Issued API Keys</h2>
+            <div id="dev-keys-list">Loading keys...</div>
+          </section>
+        </div>
+
+        <div class="dev-grid">
+          <section class="panel-card" aria-labelledby="dev-test-heading">
+            <h2 id="dev-test-heading">Safe API Tester &amp; Python SDK</h2>
+            <p style="font-size:0.84rem; color:var(--text-secondary);">Keys pasted here stay in memory only and are never saved to browser storage.</p>
+            <div class="stack-form">
+              <input id="dev-test-key" type="password" placeholder="Paste X-API-Key (lumo_pk_...)" />
+              <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                <input id="dev-test-query" type="text" value="LUMO" placeholder="Search query" style="flex:1;" />
+                <button id="dev-test-btn" type="button" class="btn-primary">Test /api/v1/search</button>
+              </div>
+              <pre id="dev-test-out" class="dev-code" hidden></pre>
+            </div>
+
+            <h3 style="margin-top:0.9rem;">Python SDK Quickstart (<code>sdk/lumo_sdk.py</code>)</h3>
+            <pre class="dev-code">from sdk.lumo_sdk import LumoClient
+
+client = LumoClient("http://127.0.0.1:8000", api_key="lumo_pk_...")
+results = client.search("FastAPI", mode="hybrid")
+print(results["total"], results["results"])</pre>
+          </section>
+
+          <section class="panel-card" aria-labelledby="dev-usage-heading">
+            <h2 id="dev-usage-heading">Recent API Usage &amp; Endpoints</h2>
+            <div id="dev-usage-list"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lumo-footer"></footer>
+    <script type="module" src="./js/developer.js"></script>
+  </body>
+</html>
