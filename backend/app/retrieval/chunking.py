@@ -28,25 +28,40 @@ def _split_with_overlap(text: str, chunk_size: int, chunk_overlap: int) -> list[
     clean = (text or "").strip()
     if not clean:
         return []
+    # Invalid sizes used to emit empty slices or skip the tail of a block.
+    chunk_size = max(1, chunk_size)
+    chunk_overlap = min(max(0, chunk_overlap), chunk_size - 1)
     if len(clean) <= chunk_size:
         return [clean]
     paragraphs = [p.strip() for p in clean.split("\n\n") if p.strip()]
     if len(paragraphs) <= 1:
         paragraphs = [s.strip() for s in re.split(r"(?<=[.!?])\s+", clean) if s.strip()]
+    step = max(1, chunk_size - chunk_overlap)
+
+    def _windows(unit: str) -> list[str]:
+        return [unit[i : i + chunk_size] for i in range(0, len(unit), step)]
+
     chunks: list[str] = []
     cur = ""
     for unit in paragraphs:
-        if len(cur) + len(unit) + 2 <= chunk_size:
+        if not unit:
+            continue
+        separator = 2 if cur else 0
+        if len(cur) + len(unit) + separator <= chunk_size:
             cur = f"{cur}\n\n{unit}".strip() if cur else unit
+            continue
+        if cur:
+            chunks.append(cur)
+            tail = cur[-chunk_overlap:] if chunk_overlap > 0 else ""
+            if tail and len(tail) + len(unit) + 1 <= chunk_size:
+                cur = f"{tail} {unit}".strip()
+                continue
+            cur = ""
+        if len(unit) <= chunk_size:
+            cur = unit
         else:
-            if cur:
-                chunks.append(cur)
-                tail = cur[-chunk_overlap:] if chunk_overlap > 0 else ""
-                cur = f"{tail} {unit}".strip() if tail and len(tail) + len(unit) + 1 <= chunk_size else unit[:chunk_size]
-            else:
-                for i in range(0, len(unit), max(1, chunk_size - chunk_overlap)):
-                    chunks.append(unit[i : i + chunk_size])
-                cur = ""
+            # Keep every window. Taking only unit[:chunk_size] dropped the rest.
+            chunks.extend(_windows(unit))
     if cur:
         chunks.append(cur)
     return chunks
