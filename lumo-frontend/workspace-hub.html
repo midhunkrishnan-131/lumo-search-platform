@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUMO Unified Intelligence Workspace — Plan, orchestrate, and verify multi-module intelligence workflows.">
+  <title>Unified Workspace — LUMO</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    .uw-wrap { max-width: 1160px; margin: 1.5rem auto; padding: 0 1.25rem 3rem; display: grid; gap: 1.25rem; }
+    .uw-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem; }
+    .uw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .uw-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+    .uw-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.76rem; background: var(--bg-secondary); font-weight: 600; }
+    .uw-pre { background: var(--bg-secondary); border-radius: 8px; padding: 0.75rem; overflow: auto; font-size: 0.8rem; max-height: 260px; }
+    .uw-input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); }
+  </style>
+</head>
+<body class="page-app">
+  <div id="lumo-header"></div>
+  <main class="uw-wrap">
+    <div>
+      <h1 style="margin:0;">Unified Intelligence Workspace</h1>
+      <p style="margin:0.25rem 0 0; color:var(--text-secondary); font-size:0.9rem;">Route requests across Search, AI Search, Research, Documents, Data Intelligence, Knowledge Graph, and Guardian with explicit plan review.</p>
+    </div>
+
+    <div id="uw-banner" class="status-banner" hidden></div>
+
+    <section class="uw-card">
+      <h2 style="margin-top:0; font-size:1.05rem;">1. Intelligence Request & Inputs</h2>
+      <form id="uw-plan-form" style="display:grid; gap:0.75rem;">
+        <textarea id="uw-request" class="uw-input" rows="3" placeholder="Ask a question, request research, paste a URL to verify, or describe an analysis..." required></textarea>
+        <div class="uw-grid">
+          <input id="uw-url" class="uw-input" type="text" placeholder="Optional URL to verify (e.g. https://example.com)">
+          <select id="uw-intent" class="uw-input">
+            <option value="">Auto-detect intent</option>
+            <option value="SEARCH">SEARCH</option>
+            <option value="AI_SEARCH">AI_SEARCH</option>
+            <option value="RESEARCH">RESEARCH</option>
+            <option value="DOCUMENT_ANALYSIS">DOCUMENT_ANALYSIS</option>
+            <option value="DATA_ANALYSIS">DATA_ANALYSIS</option>
+            <option value="KNOWLEDGE_GRAPH">KNOWLEDGE_GRAPH</option>
+            <option value="URL_VERIFICATION">URL_VERIFICATION</option>
+            <option value="MULTI_MODULE_WORKFLOW">MULTI_MODULE_WORKFLOW</option>
+          </select>
+        </div>
+        <div class="uw-grid">
+          <textarea id="uw-doc" class="uw-input" rows="2" placeholder="Optional document text..."></textarea>
+          <textarea id="uw-csv" class="uw-input" rows="2" placeholder="Optional CSV dataset (e.g. col1,col2&#10;a,10)..."></textarea>
+        </div>
+        <div>
+          <button id="uw-plan-btn" type="submit" class="btn-primary">Plan Workflow</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="uw-plan-panel" class="uw-card" hidden>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <h2 style="margin:0; font-size:1.05rem;">2. Workflow Plan & Execution Control</h2>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <button id="uw-exec-btn" type="button" class="btn-primary">Execute Workflow</button>
+          <button id="uw-cancel-btn" type="button" class="btn-secondary">Cancel</button>
+          <button id="uw-retry-btn" type="button" class="btn-secondary">Retry Failed</button>
+          <button id="uw-copy-btn" type="button" class="btn-secondary">Copy Summary</button>
+          <a id="uw-exp-md" class="btn-secondary" target="_blank" rel="noopener">Export MD</a>
+          <a id="uw-exp-json" class="btn-secondary" target="_blank" rel="noopener">Export JSON</a>
+        </div>
+      </div>
+      <div id="uw-plan-meta" style="margin:0.65rem 0; font-size:0.86rem; color:var(--text-secondary);"></div>
+      <div id="uw-steps-list"></div>
+    </section>
+
+    <section id="uw-results-panel" class="uw-card" hidden>
+      <h2 style="margin-top:0; font-size:1.05rem;">3. Unified Results, Sources & Disagreements</h2>
+      <p id="uw-summary" style="font-weight:500;"></p>
+      <div id="uw-sections" style="display:grid; gap:0.85rem;"></div>
+    </section>
+
+    <section class="uw-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <h2 style="margin:0; font-size:1.05rem;">4. Workflow History</h2>
+        <div style="display:flex; gap:0.4rem;">
+          <input id="uw-hist-q" class="uw-input" style="width:190px;" placeholder="Filter history...">
+          <button id="uw-hist-refresh" type="button" class="btn-secondary">Refresh</button>
+        </div>
+      </div>
+      <div id="uw-history-list" style="margin-top:0.65rem;"></div>
+    </section>
+  </main>
+  <script type="module" src="./js/workspace-hub.js"></script>
+</body>
+</html>

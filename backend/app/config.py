@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = ""
     log_level: str = "INFO"
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5500,http://127.0.0.1:5500"
     api_auth_token: str = ""
     rate_limit_per_minute: int = 240
 
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
 
     # AI Search & RAG Configuration (Phase 8)
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_model: str = "gemini-flash-latest"
     grok_api_key: str = ""
     grok_model: str = "grok-beta"
     ai_primary_provider: str = "gemini"
@@ -82,6 +82,15 @@ class Settings(BaseSettings):
     guardian_virustotal_base_url: str = "https://www.virustotal.com/api/v3"
     guardian_virustotal_timeout: float = 5.0
     guardian_history_limit: int = 100
+
+    # Observability, Resilience & Reliability Configuration (Phase 26)
+    log_format: str = "auto"  # "auto" (json in production, text otherwise), "json", or "text"
+    slow_request_threshold_ms: float = 1000.0
+    ai_max_retries: int = 1
+    ai_retry_backoff_seconds: float = 0.5
+    ai_circuit_breaker_threshold: int = 3
+    ai_circuit_breaker_cooldown_seconds: float = 60.0
+    job_stuck_timeout_seconds: int = 600
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
@@ -165,3 +174,24 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return the process-wide settings object."""
     return Settings()
+
+
+def validate_startup_config(settings: Settings) -> dict[str, list[str]]:
+    """Validate runtime configuration without exposing secrets; return warnings and errors."""
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    if settings.log_format.lower().strip() not in ("auto", "json", "text"):
+        warnings.append(f"Invalid LOG_FORMAT '{settings.log_format}'; defaulting to text/auto.")
+    if settings.is_production and not settings.api_auth_token.strip():
+        warnings.append("API_AUTH_TOKEN is empty in production environment.")
+    if settings.ai_request_timeout <= 0:
+        errors.append("AI_REQUEST_TIMEOUT must be greater than 0.")
+    if settings.slow_request_threshold_ms <= 0:
+        errors.append("SLOW_REQUEST_THRESHOLD_MS must be greater than 0.")
+    if settings.ai_max_retries < 0 or settings.ai_max_retries > 5:
+        warnings.append("AI_MAX_RETRIES outside recommended 0..5 range.")
+    if settings.is_production and not settings.database_url.strip():
+        warnings.append("DATABASE_URL not set in production; local SQLite fallback may be used.")
+
+    return {"warnings": warnings, "errors": errors}

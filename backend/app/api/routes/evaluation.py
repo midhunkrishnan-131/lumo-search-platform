@@ -137,7 +137,13 @@ def export_run_report(run_id: str, format: str = Query(default="json"), db: Sess
         writer.writeheader()
         for r in rows:
             if isinstance(r, dict):
-                writer.writerow({k: r.get(k, "") for k in fieldnames})
+                safe_row = {}
+                for k in fieldnames:
+                    v = r.get(k, "")
+                    if isinstance(v, str) and v[:1] in ("=", "+", "-", "@", "\t", "\r"):
+                        v = "'" + v
+                    safe_row[k] = v
+                writer.writerow(safe_row)
         return Response(content=buf.getvalue(), media_type="text/csv")
     return EvaluationRunDetailResponse.model_validate(run)
 

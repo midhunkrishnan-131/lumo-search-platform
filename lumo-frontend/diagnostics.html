@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUMO System Diagnostics — Health, Observability, Background Jobs, and Provider Resilience.">
+  <title>System Diagnostics — LUMO</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    .diag-wrap { max-width: 1120px; margin: 1.5rem auto; padding: 0 1.25rem 3rem; display: grid; gap: 1.25rem; }
+    .diag-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+    .diag-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; }
+    .diag-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.15rem; }
+    .diag-kpi { font-size: 1.45rem; font-weight: 700; margin-top: 0.25rem; }
+    .diag-pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.76rem; font-weight: 600; background: var(--bg-secondary); }
+    .diag-pill.ok { color: #16a34a; }
+    .diag-pill.warn { color: #d97706; }
+    .diag-pill.err { color: #dc2626; }
+    .diag-pre { background: var(--bg-secondary); border-radius: 8px; padding: 0.75rem; overflow: auto; font-size: 0.78rem; max-height: 240px; }
+    .diag-row { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.86rem; }
+  </style>
+</head>
+<body class="page-app">
+  <div id="lumo-header"></div>
+  <main class="diag-wrap">
+    <div class="diag-top">
+      <div>
+        <h1 style="margin:0;">System Diagnostics</h1>
+        <p style="margin:0.25rem 0 0; color:var(--text-secondary); font-size:0.9rem;">Live health, database latency, background jobs, API observability, and AI provider circuit status.</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <span id="diag-status-pill" class="diag-pill">Loading...</span>
+        <button id="diag-refresh-btn" type="button" class="btn-primary">Refresh</button>
+      </div>
+    </div>
+
+    <div id="diag-error" class="status-banner is-error" hidden></div>
+
+    <section class="diag-grid">
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Application / Version</div><div id="d-version" class="diag-kpi">—</div></div>
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Database & Latency</div><div id="d-db" class="diag-kpi">—</div></div>
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Uptime</div><div id="d-uptime" class="diag-kpi">—</div></div>
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Schema Migration</div><div id="d-schema" class="diag-kpi">—</div></div>
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Active / Failed Jobs</div><div id="d-jobs" class="diag-kpi">—</div></div>
+      <div class="diag-card"><div style="color:var(--text-secondary);font-size:0.8rem;">API Requests / 5xx</div><div id="d-reqs" class="diag-kpi">—</div></div>
+    </section>
+
+    <section class="diag-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));">
+      <div class="diag-card">
+        <h3 style="margin-top:0;">AI Providers & Circuit Breakers</h3>
+        <div id="d-providers"><p style="color:var(--text-secondary);">Loading...</p></div>
+      </div>
+      <div class="diag-card">
+        <h3 style="margin-top:0;">Storage & Vector Index</h3>
+        <div id="d-storage"><p style="color:var(--text-secondary);">Loading...</p></div>
+      </div>
+    </section>
+
+    <section class="diag-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));">
+      <div class="diag-card">
+        <h3 style="margin-top:0;">API Response Statistics</h3>
+        <pre id="d-obs" class="diag-pre">Loading...</pre>
+      </div>
+      <div class="diag-card">
+        <h3 style="margin-top:0;">Recent Errors</h3>
+        <pre id="d-errors" class="diag-pre">Loading...</pre>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./js/diagnostics.js"></script>
+</body>
+</html>

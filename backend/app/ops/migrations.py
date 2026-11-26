@@ -13,7 +13,7 @@ from app.database.connection import Base, create_tables, get_engine
 
 logger = get_logger("ops.migrations")
 
-CURRENT_SCHEMA_VERSION = 24
+CURRENT_SCHEMA_VERSION = 30
 SCHEMA_HISTORY: list[tuple[int, str]] = [
     (1, "Core crawl, document, search, and history tables"),
     (14, "Personal Workspace tables"),
@@ -24,6 +24,10 @@ SCHEMA_HISTORY: list[tuple[int, str]] = [
     (22, "External Integration Layer tables"),
     (23, "Developer Platform API keys and usage tracking tables"),
     (24, "Intelligence Evaluation & Benchmarking tables"),
+    (27, "Unified Intelligence Workflow & Orchestration tables"),
+    (28, "Personal Knowledge Hub & Persistent Intelligence tables"),
+    (29, "Unified Indexing & Advanced Retrieval tables"),
+    (30, "Intelligence Studio & Deliverable Engine tables"),
 ]
 
 

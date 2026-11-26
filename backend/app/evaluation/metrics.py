@@ -162,3 +162,243 @@ def latency_stats(durations_ms: list[float]) -> dict[str, Any]:
         "p99_ms": p99,
         "throughput_qps": qps,
     }
+
+
+def _normalize_tokens(text: str) -> tuple[str, list[str]]:
+    cleaned = _CITE_RE.sub(" ", text or "")
+    cleaned = re.sub(r"[^a-zA-Z0-9\s]", " ", cleaned.lower())
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned, cleaned.split() if cleaned else []
+
+
+def evaluate_reference_answer(predicted: str, reference: str | None) -> dict[str, Any] | None:
+    """Compute normalized exact match and multiset token P/R/F1 against a reference answer."""
+    if reference is None or not str(reference).strip():
+        return None
+    norm_pred, pred_toks = _normalize_tokens(predicted)
+    norm_ref, ref_toks = _normalize_tokens(str(reference))
+    if not pred_toks or not ref_toks:
+        return {
+            "exact_match": 1.0 if (norm_pred == norm_ref and norm_ref != "") else 0.0,
+            "token_precision": 0.0,
+            "token_recall": 0.0,
+            "token_f1": 0.0,
+        }
+    from collections import Counter
+
+    pc = Counter(pred_toks)
+    rc = Counter(ref_toks)
+    overlap = sum((pc & rc).values())
+    p = round(overlap / len(pred_toks), 4)
+    r = round(overlap / len(ref_toks), 4)
+    return {
+        "exact_match": 1.0 if norm_pred == norm_ref else 0.0,
+        "token_precision": p,
+        "token_recall": r,
+        "token_f1": f1_score(p, r),
+    }
+
+
+def evaluate_relationships(
+    predicted_rels: list[Any],
+    expected_rels: list[dict[str, Any]] | None,
+    source_text: str = "",
+) -> dict[str, Any]:
+    """Evaluate extracted KG relationships using exact & normalized matching plus snippet evidence."""
+    from app.graph.normalizer import normalize_entity_name
+
+    # Evidence attribution check: does snippet appear in source_text?
+    src_lower = (source_text or "").lower()
+    if predicted_rels:
+        ev_hits = sum(
+            1 for r in predicted_rels
+            if getattr(r, "snippet", "") and getattr(r, "snippet", "").strip().lower() in src_lower
+        )
+        evidence_rate: float | None = round(ev_hits / len(predicted_rels), 4)
+    else:
+        evidence_rate = None
+
+    if expected_rels is None:
+        return {"exact": None, "normalized": None, "evidence_attribution_rate": evidence_rate}
+
+    pred_exact = {
+        f"{getattr(r, 'source_name', '').strip()}|{getattr(r, 'relationship_type', '').strip().upper()}|{getattr(r, 'target_name', '').strip()}"
+        for r in predicted_rels
+    }
+    exp_exact = {
+        f"{str(e.get('source', '')).strip()}|{str(e.get('type', '')).strip().upper()}|{str(e.get('target', '')).strip()}"
+        for e in expected_rels
+        if isinstance(e, dict)
+    }
+
+    pred_norm = {
+        f"{normalize_entity_name(getattr(r, 'source_name', ''))}|{getattr(r, 'relationship_type', '').strip().upper()}|{normalize_entity_name(getattr(r, 'target_name', ''))}"
+        for r in predicted_rels
+    }
+    exp_norm = {
+        f"{normalize_entity_name(str(e.get('source', '')))}|{str(e.get('type', '')).strip().upper()}|{normalize_entity_name(str(e.get('target', '')))}"
+        for e in expected_rels
+        if isinstance(e, dict)
+    }
+
+    return {
+        "exact": set_prf1(pred_exact, exp_exact),
+        "normalized": set_prf1(pred_norm, exp_norm),
+        "evidence_attribution_rate": evidence_rate,
+    }
+
+
+def evaluate_dataset_profile(
+    actual: dict[str, Any],
+    expected: dict[str, Any],
+    rel_tol: float = 0.01,
+) -> dict[str, Any]:
+    """Compare profile_dataset_file output against expected schema, missingness, and numeric stats."""
+    checks_total = 0
+    checks_passed = 0
+    details: dict[str, bool] = {}
+
+    def _record(name: str, ok: bool) -> None:
+        nonlocal checks_total, checks_passed
+        checks_total += 1
+        if ok:
+            checks_passed += 1
+        details[name] = ok
+
+    if "row_count" in expected:
+        _record("row_count", actual.get("row_count") == expected["row_count"])
+    if "column_count" in expected:
+        _record("column_count", actual.get("column_count") == expected["column_count"])
+
+    cols_by_name = {c.get("name"): c for c in (actual.get("columns") or []) if isinstance(c, dict)}
+    if "column_names" in expected:
+        actual_names = [c.get("name") for c in (actual.get("columns") or []) if isinstance(c, dict)]
+        _record("column_names", actual_names == list(expected["column_names"]))
+
+    if "column_types" in expected and isinstance(expected["column_types"], dict):
+        for col_name, exp_type in expected["column_types"].items():
+            col = cols_by_name.get(col_name)
+            _record(f"type:{col_name}", bool(col and col.get("inferred_type") == exp_type))
+
+    profile_meta = actual.get("profile") or {}
+    if "total_missing_cells" in expected:
+        _record("total_missing_cells", profile_meta.get("total_missing_cells") == expected["total_missing_cells"])
+    if "duplicate_rows" in expected:
+        _record("duplicate_rows", profile_meta.get("duplicate_rows") == expected["duplicate_rows"])
+
+    if "missing_values" in expected and isinstance(expected["missing_values"], dict):
+        for col_name, exp_miss in expected["missing_values"].items():
+            col = cols_by_name.get(col_name)
+            _record(f"missing:{col_name}", bool(col and col.get("missing_count") == exp_miss))
+
+    if "numeric_stats" in expected and isinstance(expected["numeric_stats"], dict):
+        for col_name, stat_map in expected["numeric_stats"].items():
+            col = cols_by_name.get(col_name) or {}
+            stats = col.get("numeric_stats") or {}
+            for stat_k, exp_v in (stat_map or {}).items():
+                act_v = stats.get(stat_k)
+                ok = act_v is not None and numeric_within_tolerance(float(act_v), float(exp_v), rel_tol=rel_tol)
+                _record(f"stat:{col_name}.{stat_k}", ok)
+
+    if "categorical_stats" in expected and isinstance(expected["categorical_stats"], dict):
+        for col_name, exp_top in expected["categorical_stats"].items():
+            col = cols_by_name.get(col_name) or {}
+            top_cats = col.get("top_categories") or []
+            top_val = top_cats[0].get("value") if top_cats else None
+            _record(f"cat:{col_name}", top_val == exp_top)
+
+    if "quality_indicators" in expected and isinstance(expected["quality_indicators"], list):
+        obs_text = " ".join(str(o) for o in (profile_meta.get("quality_observations") or [])).lower()
+        for idx, ind in enumerate(expected["quality_indicators"]):
+            _record(f"quality:{idx}", str(ind).lower() in obs_text)
+
+    return {
+        "passed": checks_total > 0 and checks_passed == checks_total,
+        "checks_passed": checks_passed,
+        "checks_total": checks_total,
+        "details": details,
+    }
+
+
+def evaluate_chart_output(
+    actual: dict[str, Any],
+    expected: dict[str, Any],
+    rel_tol: float = 0.01,
+) -> dict[str, Any]:
+    """Validate generate_chart_data output schema, labels, values, and point counts."""
+    checks_total = 0
+    checks_passed = 0
+    details: dict[str, bool] = {}
+
+    def _record(name: str, ok: bool) -> None:
+        nonlocal checks_total, checks_passed
+        checks_total += 1
+        if ok:
+            checks_passed += 1
+        details[name] = ok
+
+    has_schema = (
+        isinstance(actual, dict)
+        and "chart_type" in actual
+        and isinstance(actual.get("labels"), list)
+        and isinstance(actual.get("values"), list)
+        and isinstance(actual.get("points"), list)
+    )
+    _record("schema_valid", has_schema)
+
+    if "chart_type" in expected:
+        _record("chart_type", actual.get("chart_type") == expected["chart_type"])
+    if "x_label" in expected:
+        _record("x_label", actual.get("x_label") == expected["x_label"])
+    if "y_label" in expected:
+        _record("y_label", actual.get("y_label") == expected["y_label"])
+    if "labels" in expected:
+        _record("labels", actual.get("labels") == list(expected["labels"]))
+    if "min_labels" in expected:
+        _record("min_labels", len(actual.get("labels") or []) >= int(expected["min_labels"]))
+    if "values" in expected:
+        act_vals = actual.get("values") or []
+        exp_vals = list(expected["values"])
+        vals_ok = len(act_vals) == len(exp_vals) and all(
+            numeric_within_tolerance(float(a), float(e), rel_tol=rel_tol)
+            for a, e in zip(act_vals, exp_vals)
+        )
+        _record("values", vals_ok)
+    if "points_count" in expected:
+        _record("points_count", len(actual.get("points") or []) == int(expected["points_count"]))
+
+    return {
+        "passed": checks_total > 0 and checks_passed == checks_total,
+        "checks_passed": checks_passed,
+        "checks_total": checks_total,
+        "details": details,
+    }
+
+
+def evaluate_guardian_indicators(
+    actual_texts: list[str],
+    expected_indicators: list[str] | None = None,
+    forbidden_indicators: list[str] | None = None,
+) -> dict[str, Any]:
+    """Check expected and forbidden indicator substrings against Guardian findings/errors."""
+    haystack = " | ".join(str(t) for t in actual_texts if t).lower()
+    matched: list[str] = []
+    missing: list[str] = []
+    unexpected: list[str] = []
+
+    for ind in (expected_indicators or []):
+        if str(ind).lower() in haystack:
+            matched.append(str(ind))
+        else:
+            missing.append(str(ind))
+
+    for forb in (forbidden_indicators or []):
+        if str(forb).lower() in haystack:
+            unexpected.append(str(forb))
+
+    return {
+        "passed": len(missing) == 0 and len(unexpected) == 0,
+        "matched": matched,
+        "missing": missing,
+        "unexpected": unexpected,
+    }

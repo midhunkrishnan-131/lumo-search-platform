@@ -76,6 +76,9 @@ class EvaluationRunRequest(BaseModel):
     provider: str = Field(default="auto", max_length=32)
     model_name: str | None = Field(default=None, max_length=128)
     max_cases: int = Field(default=50, ge=1, le=200)
+    use_llm_judge: bool = False
+    judge_provider: str | None = Field(default=None, max_length=32)
+    judge_model: str | None = Field(default=None, max_length=128)
 
 
 class EvaluationRunResponse(BaseModel):

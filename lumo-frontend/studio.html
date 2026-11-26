@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUMO Intelligence Studio — Structured Deliverables, AI Writing Assist, Citations, and Exports.">
+  <title>Intelligence Studio — LUMO</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    .st-wrap { max-width: 1180px; margin: 1.5rem auto; padding: 0 1.25rem 3rem; display: grid; gap: 1.25rem; }
+    .st-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .st-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .st-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .st-input { width: 100%; padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); }
+    .st-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.74rem; background: var(--bg-secondary); font-weight: 600; }
+  </style>
+</head>
+<body class="page-app">
+  <div id="lumo-header"></div>
+  <main class="st-wrap">
+    <div>
+      <h1 style="margin:0;">LUMO Intelligence Studio</h1>
+      <p style="margin:0.25rem 0 0; color:var(--text-secondary); font-size:0.9rem;">Transform research, sources, datasets, and workflows into structured, cited deliverables.</p>
+    </div>
+
+    <div id="st-banner" class="status-banner" hidden></div>
+
+    <div class="st-grid">
+      <section class="st-card">
+        <h2 style="margin-top:0; font-size:1.05rem;">New Deliverable Project</h2>
+        <form id="st-create-form" style="display:grid; gap:0.5rem;">
+          <input id="st-title" class="st-input" placeholder="Project title..." required>
+          <select id="st-type" class="st-input">
+            <option value="research_report">Research Report</option>
+            <option value="technical_report">Technical Report</option>
+            <option value="business_intelligence">Business Intelligence Report</option>
+            <option value="data_analysis">Data Analysis Report</option>
+            <option value="briefing">Briefing</option>
+            <option value="custom">Custom Document</option>
+          </select>
+          <button type="submit" class="btn-primary">Create Project</button>
+        </form>
+      </section>
+
+      <section class="st-card">
+        <h2 style="margin-top:0; font-size:1.05rem;">Saved Projects</h2>
+        <div id="st-proj-list"></div>
+      </section>
+    </div>
+
+    <section id="st-editor" class="st-card" hidden>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div>
+          <h2 id="st-ed-title" style="margin:0;"></h2>
+          <span id="st-ed-status" class="st-badge">Saved</span>
+        </div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <button id="st-save-btn" type="button" class="btn-primary">Save Version</button>
+          <button id="st-ai-btn" type="button" class="btn-secondary">AI Draft Summary</button>
+          <button id="st-slides-btn" type="button" class="btn-secondary">Slide Outline</button>
+          <button id="st-kh-btn" type="button" class="btn-secondary">Save to Knowledge Hub</button>
+          <a id="st-prev-link" class="btn-secondary" target="_blank" rel="noopener">Preview</a>
+          <a id="st-exp-md" class="btn-secondary" target="_blank" rel="noopener">Export MD</a>
+          <a id="st-exp-html" class="btn-secondary" target="_blank" rel="noopener">Export HTML</a>
+        </div>
+      </div>
+
+      <div id="st-ai-preview" class="st-card" style="margin-top:0.85rem;" hidden>
+        <strong>AI Assist Preview</strong>
+        <p id="st-ai-text" style="white-space:pre-wrap;"></p>
+        <div style="display:flex; gap:0.4rem;">
+          <button id="st-ai-accept" type="button" class="btn-primary">Accept</button>
+          <button id="st-ai-reject" type="button" class="btn-secondary">Reject</button>
+        </div>
+      </div>
+
+      <div style="margin-top:0.85rem; display:grid; gap:0.75rem;">
+        <label style="font-weight:600;">Executive Summary</label>
+        <textarea id="st-exec-sum" class="st-input" rows="3"></textarea>
+        <div id="st-sections"></div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./js/studio.js"></script>
+</body>
+</html>

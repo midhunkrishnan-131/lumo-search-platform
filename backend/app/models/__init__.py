@@ -53,6 +53,15 @@ from app.models.evaluation import (
     EvaluationReview,
     EvaluationRun,
 )
+from app.models.workflow import IntelligenceWorkflow, IntelligenceWorkflowStep
+from app.models.knowledge_hub import (
+    KnowledgeActivity,
+    KnowledgeCollectionMeta,
+    KnowledgeItemMeta,
+    KnowledgeRelationship,
+)
+from app.models.retrieval import IndexedRecord
+from app.models.studio import StudioProject, StudioProjectVersion
 
 __all__ = [
     "CrawlSession",

@@ -32,7 +32,7 @@ def ops_release(request: Request) -> dict[str, Any]:
     return {
         "application": cfg.app_name,
         "version": cfg.app_version,
-        "phase": "21",
+        "phase": "26",
         "environment": cfg.environment,
         "schema_version": mig.get("current_version", 0),
         "target_schema_version": CURRENT_SCHEMA_VERSION,

@@ -29,6 +29,12 @@ export const SEARCH_MODES = Object.freeze({
     description:
       'Grounded question answering with verified citations from retrieved documents.',
   },
+  web: {
+    id: 'web',
+    label: 'Web (Live)',
+    description:
+      'Live public internet search across Wikipedia and real-time web indices.',
+  },
 });
 
 export const RESULT_CATEGORIES = Object.freeze([

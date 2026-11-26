@@ -34,6 +34,8 @@ API_PERMISSIONS: dict[str, str] = {
     "integrations:sync": "Configure, test, and synchronize external integrations.",
     "automation:read": "List automations, execution history, and notifications.",
     "automation:execute": "Create, trigger, pause, or resume automations.",
+    "workflows:read": "Read Unified Intelligence Workflows, status, results, and exports.",
+    "workflows:execute": "Plan, execute, cancel, retry, and delete Unified Intelligence Workflows.",
     "system:read": "Read system diagnostics, health, and release metadata.",
 }
 
@@ -60,13 +62,17 @@ def generate_raw_api_key() -> tuple[str, str, str]:
 def resolve_required_permission(method: str, path: str) -> str | None:
     """Map an API route and HTTP method to its required granular permission."""
     is_write = method.upper() in ("POST", "PUT", "PATCH", "DELETE")
+    if path.startswith("/api/v1/retrieval/index"):
+        return "documents:write" if is_write else "documents:read"
+    if path.startswith("/api/v1/retrieval"):
+        return "search:read"
     if path.startswith("/api/v1/search"):
         return "search:read"
     if path.startswith("/api/v1/ai"):
         return "ai:execute"
     if path.startswith("/api/v1/research"):
         return "research:write" if is_write else "research:read"
-    if path.startswith("/api/v1/documents"):
+    if path.startswith("/api/v1/documents") or path.startswith("/api/v1/studio"):
         return "documents:write" if is_write else "documents:read"
     if path.startswith("/api/v1/intelligence"):
         return "data_intelligence:write" if is_write else "data_intelligence:read"
@@ -74,15 +80,17 @@ def resolve_required_permission(method: str, path: str) -> str | None:
         return "graph:read"
     if path.startswith("/api/v1/guardian"):
         return "guardian:execute"
-    if path.startswith("/api/v1/workspace"):
+    if path.startswith("/api/v1/workspace") or path.startswith("/api/v1/knowledge"):
         # Search POST is a read operation
-        if path.rstrip("/") == "/api/v1/workspace/search":
+        if path.rstrip("/") in ("/api/v1/workspace/search", "/api/v1/knowledge/search", "/api/v1/knowledge/context"):
             return "workspace:read"
         return "workspace:write" if is_write else "workspace:read"
     if path.startswith("/api/v1/integrations"):
         return "integrations:sync" if is_write else "integrations:read"
     if path.startswith("/api/v1/automations") or path.startswith("/api/v1/executions") or path.startswith("/api/v1/notifications"):
         return "automation:execute" if is_write else "automation:read"
+    if path.startswith("/api/v1/workflows"):
+        return "workflows:execute" if is_write else "workflows:read"
     if path.startswith("/api/v1/dashboard") or path.startswith("/api/v1/ops") or path.startswith("/api/v1/evaluations") or path.startswith("/api/v1/evaluation-datasets"):
         return "system:read"
     if path.startswith("/api/v1/developer/info"):

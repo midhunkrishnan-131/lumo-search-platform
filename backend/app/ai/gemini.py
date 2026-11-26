@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 
 import httpx
@@ -38,7 +39,7 @@ class GeminiProvider(BaseAIProvider):
         super().__init__(name="gemini")
         settings = get_settings()
         self.api_key = (api_key if api_key is not None else settings.gemini_api_key).strip()
-        self.default_model = (default_model or settings.gemini_model or "gemini-1.5-flash").strip()
+        self.default_model = (default_model or settings.gemini_model or "gemini-3.5-flash-lite").strip()
         self.timeout = timeout or settings.ai_request_timeout
 
     def is_configured(self) -> bool:
@@ -78,21 +79,44 @@ class GeminiProvider(BaseAIProvider):
             },
         }
 
-        try:
-            with httpx.Client(timeout=effective_timeout) as client:
-                resp = client.post(url, headers=headers, params=params, json=payload)
-        except httpx.TimeoutException as exc:
-            logger.warning("Gemini request timed out after %.1fs", effective_timeout)
-            raise AIProviderTimeoutError(
-                f"Gemini API request timed out after {effective_timeout}s.",
-                provider="gemini",
-            ) from exc
-        except httpx.RequestError as exc:
-            logger.warning("Gemini network request error (%s)", type(exc).__name__)
+        # Retry on 503 (high demand / transient overload) with exponential backoff
+        _max_retries = 2
+        _last_exc: Exception | None = None
+        resp = None
+        for _attempt in range(_max_retries + 1):
+            try:
+                with httpx.Client(timeout=effective_timeout) as client:
+                    resp = client.post(url, headers=headers, params=params, json=payload)
+                if resp.status_code != 503:
+                    break  # Success or non-retriable error
+                wait = 2 ** _attempt  # 1s, 2s, 4s
+                logger.warning(
+                    "Gemini HTTP 503 (attempt %d/%d), retrying in %ds…",
+                    _attempt + 1, _max_retries + 1, wait,
+                )
+                time.sleep(wait)
+            except httpx.TimeoutException as exc:
+                logger.warning("Gemini request timed out after %.1fs", effective_timeout)
+                raise AIProviderTimeoutError(
+                    f"Gemini API request timed out after {effective_timeout}s.",
+                    provider="gemini",
+                ) from exc
+            except httpx.RequestError as exc:
+                _last_exc = exc
+                logger.warning("Gemini network request error (%s)", type(exc).__name__)
+                if _attempt < _max_retries:
+                    time.sleep(2 ** _attempt)
+                    continue
+                raise AIProviderUnavailableError(
+                    "Gemini API service is currently unreachable.",
+                    provider="gemini",
+                ) from exc
+
+        if resp is None:
             raise AIProviderUnavailableError(
                 "Gemini API service is currently unreachable.",
                 provider="gemini",
-            ) from exc
+            )
 
         if resp.status_code == 429:
             logger.warning("Gemini rate limit exceeded (HTTP 429)")
@@ -118,6 +142,12 @@ class GeminiProvider(BaseAIProvider):
             if "API_KEY_INVALID" in message or "API key not valid" in message:
                 raise AIProviderAuthError("Invalid Gemini API key.", provider="gemini", status_code=400)
             raise AIProviderError(f"Gemini API request error: {message}", provider="gemini", status_code=400)
+        elif resp.status_code == 404:
+            raise AIProviderError(
+                f"Gemini model '{target_model}' was not found (HTTP 404).",
+                provider="gemini",
+                status_code=404,
+            )
         elif resp.status_code >= 500:
             raise AIProviderUnavailableError(
                 f"Gemini API server returned HTTP {resp.status_code}.",

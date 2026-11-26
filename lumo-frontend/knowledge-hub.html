@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUMO Personal Knowledge Hub — Collections, Saved Intelligence, Notes, Relationships, and Timeline.">
+  <title>Knowledge Hub — LUMO</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    .kh-wrap { max-width: 1180px; margin: 1.5rem auto; padding: 0 1.25rem 3rem; display: grid; gap: 1.25rem; }
+    .kh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .kh-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .kh-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .kh-input { width: 100%; padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); }
+    .kh-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.74rem; background: var(--bg-secondary); font-weight: 600; }
+  </style>
+</head>
+<body class="page-app">
+  <div id="lumo-header"></div>
+  <main class="kh-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+      <div>
+        <h1 style="margin:0;">Personal Knowledge Hub</h1>
+        <p style="margin:0.25rem 0 0; color:var(--text-secondary); font-size:0.9rem;">Organize collections, saved intelligence, notes, relationships, and timeline activity.</p>
+      </div>
+      <div style="display:flex; gap:0.4rem;">
+        <a id="kh-exp-md" class="btn-secondary" target="_blank" rel="noopener">Export MD</a>
+        <a id="kh-exp-json" class="btn-secondary" target="_blank" rel="noopener">Export JSON</a>
+      </div>
+    </div>
+
+    <div id="kh-banner" class="status-banner" hidden></div>
+
+    <div class="kh-grid">
+      <section class="kh-card">
+        <h2 style="margin-top:0; font-size:1.05rem;">Collections</h2>
+        <form id="kh-col-form" style="display:flex; gap:0.4rem; margin-bottom:0.75rem;">
+          <input id="kh-col-name" class="kh-input" placeholder="New collection name..." required>
+          <button type="submit" class="btn-primary">Create</button>
+        </form>
+        <div id="kh-col-list"></div>
+      </section>
+
+      <section class="kh-card">
+        <h2 style="margin-top:0; font-size:1.05rem;">Save to Knowledge Hub</h2>
+        <form id="kh-save-form" style="display:grid; gap:0.5rem;">
+          <div style="display:flex; gap:0.4rem;">
+            <select id="kh-item-type" class="kh-input">
+              <option value="SOURCE">SOURCE</option>
+              <option value="RESEARCH_REPORT">RESEARCH_REPORT</option>
+              <option value="AI_ANSWER">AI_ANSWER</option>
+              <option value="DOCUMENT">DOCUMENT</option>
+              <option value="DATASET">DATASET</option>
+              <option value="WORKFLOW_RESULT">WORKFLOW_RESULT</option>
+            </select>
+            <select id="kh-item-col" class="kh-input"><option value="">No collection</option></select>
+          </div>
+          <input id="kh-item-title" class="kh-input" placeholder="Title..." required>
+          <input id="kh-item-url" class="kh-input" placeholder="Source URL (optional)">
+          <input id="kh-item-tags" class="kh-input" placeholder="Tags (comma-separated)">
+          <textarea id="kh-item-content" class="kh-input" rows="2" placeholder="Summary or content..."></textarea>
+          <button type="submit" class="btn-primary">Save Item</button>
+        </form>
+      </section>
+    </div>
+
+    <section class="kh-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+        <h2 style="margin:0; font-size:1.05rem;">Search & Saved Intelligence</h2>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <input id="kh-q" class="kh-input" style="width:200px;" placeholder="Search knowledge...">
+          <select id="kh-filter-type" class="kh-input" style="width:160px;">
+            <option value="">All types</option>
+            <option value="SOURCE">SOURCE</option>
+            <option value="RESEARCH_REPORT">RESEARCH_REPORT</option>
+            <option value="AI_ANSWER">AI_ANSWER</option>
+            <option value="DOCUMENT">DOCUMENT</option>
+            <option value="WORKFLOW_RESULT">WORKFLOW_RESULT</option>
+          </select>
+          <button id="kh-search-btn" type="button" class="btn-secondary">Search</button>
+        </div>
+      </div>
+      <div id="kh-items-list"></div>
+    </section>
+
+    <div class="kh-grid">
+      <section class="kh-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin-top:0; font-size:1.05rem;">Notes</h2>
+          <span id="kh-note-status" class="kh-badge">Ready</span>
+        </div>
+        <form id="kh-note-form" style="display:grid; gap:0.5rem; margin-bottom:0.75rem;">
+          <input id="kh-note-title" class="kh-input" placeholder="Note title..." required>
+          <textarea id="kh-note-body" class="kh-input" rows="3" placeholder="Write Markdown note (autosaves while editing)..."></textarea>
+          <button type="submit" class="btn-primary">Save Note</button>
+        </form>
+        <div id="kh-notes-list"></div>
+      </section>
+
+      <section class="kh-card">
+        <h2 style="margin-top:0; font-size:1.05rem;">Activity Timeline</h2>
+        <div id="kh-timeline-list"></div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="./js/knowledge-hub.js"></script>
+</body>
+</html>

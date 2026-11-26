@@ -4,15 +4,17 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
 from app.database.connection import get_db, get_session_factory
 from app.history.service import record_search
 from app.schemas.search import SearchResponse, SearchResultItem
-from app.search.engine import ClassicSearchEngine
+from app.search.engine import ClassicSearchEngine, SearchResult, SearchResultSet
 from app.search.hybrid import HybridSearchOrchestrator
+from app.search.web_provider import fetch_and_extract_webpage, live_web_provider
 from app.semantic.search import SemanticSearchEngine
 from app.ai.orchestrator import AISearchOrchestrator
 from app.schemas.ai import AISearchRequest
@@ -45,7 +47,33 @@ def search_endpoint(
     degraded = False
     metadata: dict[str, str | int | float | bool] = {}
 
-    if mode == "semantic":
+    if mode == "web":
+        web_hits = live_web_provider.search(query=q, page=page, per_page=per_page)
+        sr_items = [
+            SearchResult(
+                id=h.id,
+                url=h.url,
+                title=h.title,
+                description=h.snippet,
+                domain=h.domain,
+                snippet=h.snippet,
+                score=h.score,
+                published_at=h.published_at,
+                sources=[h.source_provider],
+            )
+            for h in web_hits
+        ]
+        search_set = SearchResultSet(
+            query=q,
+            mode="web",
+            total=len(sr_items),
+            page=page,
+            per_page=per_page,
+            total_pages=1,
+            results=sr_items,
+        )
+        metadata["web_provider"] = live_web_provider.name
+    elif mode == "semantic":
         semantic_engine = SemanticSearchEngine(db)
         search_set = semantic_engine.search(
             query=q,
@@ -205,3 +233,53 @@ def hybrid_search_endpoint(
         degraded=degraded,
         execution_metadata=metadata,
     )
+
+
+class WebExtractRequest(BaseModel):
+    url: str
+
+
+@router.get("/web", response_model=SearchResponse, summary="Live Public Internet Search")
+def web_search_endpoint(
+    q: Annotated[str, Query(min_length=1, max_length=400)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=20)] = 8,
+) -> SearchResponse:
+    try:
+        web_hits = live_web_provider.search(query=q, page=page, per_page=per_page)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    sr_items = [
+        SearchResult(
+            id=h.id,
+            url=h.url,
+            title=h.title,
+            description=h.snippet,
+            domain=h.domain,
+            snippet=h.snippet,
+            score=h.score,
+            published_at=h.published_at,
+            sources=[h.source_provider],
+        )
+        for h in web_hits
+    ]
+    return SearchResponse(
+        source="api",
+        query=q,
+        mode="web",
+        total=len(sr_items),
+        page=page,
+        per_page=per_page,
+        total_pages=1,
+        results=[SearchResultItem.model_validate(r) for r in sr_items],
+        degraded=False,
+        execution_metadata={"web_provider": live_web_provider.name},
+    )
+
+
+@router.post("/extract", summary="SSRF-Safe Webpage Content Extraction")
+def extract_webpage_endpoint(payload: WebExtractRequest):
+    try:
+        return fetch_and_extract_webpage(payload.url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

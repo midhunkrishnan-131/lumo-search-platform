@@ -80,13 +80,32 @@
 
         <div class="ev-grid">
           <section class="panel-card" aria-labelledby="ev-ds-heading">
-            <h2 id="ev-ds-heading">Create Evaluation Dataset</h2>
+            <h2 id="ev-ds-heading">Evaluation Datasets (Create or Import)</h2>
+            <form id="ev-import-form" class="stack-form" style="margin-bottom:0.85rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
+              <label for="ev-imp-file">Import Dataset File (JSON, JSONL, CSV — max 5 MB)</label>
+              <input id="ev-imp-file" type="file" accept=".json,.jsonl,.csv" required />
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.4rem;">
+                <input id="ev-imp-name" type="text" placeholder="Imported dataset name" required style="flex:1;" />
+                <select id="ev-imp-cat" aria-label="Import Category">
+                  <option value="search">Search</option>
+                  <option value="ai_search">AI Search</option>
+                  <option value="research">Research Agent</option>
+                  <option value="knowledge_graph">Knowledge Graph</option>
+                  <option value="document">Document Intelligence</option>
+                  <option value="data_intelligence">Data Intelligence</option>
+                  <option value="guardian">Guardian</option>
+                </select>
+                <button id="ev-imp-btn" type="submit" class="btn-secondary">Import File</button>
+              </div>
+            </form>
+
             <form id="ev-ds-form" class="stack-form">
-              <input id="ev-ds-name" type="text" placeholder="Dataset name (e.g. Core Search Suite)" required />
+              <input id="ev-ds-name" type="text" placeholder="Inline dataset name (e.g. Core Search Suite)" required />
               <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
                 <select id="ev-ds-cat" aria-label="Dataset Category">
                   <option value="search">Search</option>
                   <option value="ai_search">AI Search</option>
+                  <option value="research">Research Agent</option>
                   <option value="knowledge_graph">Knowledge Graph</option>
                   <option value="document">Document Intelligence</option>
                   <option value="data_intelligence">Data Intelligence</option>
@@ -94,8 +113,8 @@
                 </select>
                 <input id="ev-ds-ver" type="text" value="1.0" placeholder="Version" style="width:90px;" />
               </div>
-              <textarea id="ev-ds-cases" rows="4" placeholder='[{"query": "LUMO", "relevant_ids": ["demo-lumo-arch"]}]' required style="margin-top:0.4rem; font-family:'IBM Plex Mono', monospace;"></textarea>
-              <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Save Dataset</button>
+              <textarea id="ev-ds-cases" rows="3" placeholder='[{"query": "LUMO", "relevant_ids": ["demo-lumo-arch"]}]' required style="margin-top:0.4rem; font-family:'IBM Plex Mono', monospace;"></textarea>
+              <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Save Inline Dataset</button>
             </form>
             <div id="ev-ds-list" style="margin-top:0.75rem;"></div>
           </section>
@@ -111,6 +130,7 @@
                   <option value="semantic_search">Semantic Search</option>
                   <option value="hybrid_search">Hybrid Search</option>
                   <option value="ai_search">AI Search &amp; Citations</option>
+                  <option value="research_agent">Research Agent</option>
                   <option value="knowledge_graph">Knowledge Graph</option>
                   <option value="document_intelligence">Document Intelligence</option>
                   <option value="data_intelligence">Data Intelligence</option>
@@ -120,6 +140,16 @@
               </div>
               <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Register Benchmark</button>
             </form>
+
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-top:0.75rem; padding-top:0.65rem; border-top:1px solid var(--border-subtle);">
+              <label for="ev-run-provider" style="font-size:0.82rem;">Provider:</label>
+              <select id="ev-run-provider" aria-label="Evaluation AI Provider">
+                <option value="auto">Auto (Configured)</option>
+              </select>
+              <input id="ev-run-model" type="text" placeholder="Model override (optional)" style="width:165px;" />
+              <label for="ev-run-k" style="font-size:0.82rem;">K:</label>
+              <input id="ev-run-k" type="number" min="1" max="50" value="5" style="width:65px;" />
+            </div>
             <div id="ev-bm-list" style="margin-top:0.75rem;"></div>
           </section>
         </div>
@@ -131,7 +161,8 @@
           </section>
 
           <section class="panel-card" aria-labelledby="ev-cmp-heading">
-            <h2 id="ev-cmp-heading">Run Comparison &amp; Regression Check</h2>
+            <h2 id="ev-cmp-heading">Model &amp; Run Comparison / Regression Check</h2>
+            <p style="font-size:0.82rem; color:var(--text-secondary);">Compare two executed runs (including different models/providers). Note: multi-model matrix execution is run sequentially per benchmark.</p>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
               <select id="ev-cmp-base" aria-label="Baseline Run" style="flex:1;"></select>
               <select id="ev-cmp-curr" aria-label="Current Run" style="flex:1;"></select>
@@ -140,6 +171,39 @@
             <pre id="ev-cmp-out" class="ev-pre" hidden style="margin-top:0.65rem;"></pre>
           </section>
         </div>
+
+        <section id="ev-review-panel" class="panel-card" style="margin-top:1.15rem;" hidden aria-labelledby="ev-rev-heading">
+          <h2 id="ev-rev-heading">Run Results &amp; Human Evaluation Review</h2>
+          <div id="ev-rev-meta" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.5rem;"></div>
+          <pre id="ev-rev-results" class="ev-pre"></pre>
+
+          <div class="ev-grid">
+            <form id="ev-rev-form" class="stack-form">
+              <h3>Submit Human Review</h3>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <input id="ev-rev-case" type="text" placeholder="Case ID (optional)" style="flex:1;" />
+                <select id="ev-rev-score" aria-label="Review Score">
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3">Score: 3 (Acceptable)</option>
+                  <option value="2">Score: 2 (Weak)</option>
+                  <option value="1">Score: 1 (Failed)</option>
+                </select>
+                <select id="ev-rev-status" aria-label="Review Status">
+                  <option value="approved">Approved</option>
+                  <option value="flagged">Flagged</option>
+                </select>
+              </div>
+              <textarea id="ev-rev-notes" rows="2" placeholder="Reviewer notes..." style="margin-top:0.4rem;"></textarea>
+              <button id="ev-rev-submit" type="submit" class="btn-primary" style="margin-top:0.5rem;">Save Review</button>
+            </form>
+
+            <div>
+              <h3>Saved Reviews</h3>
+              <div id="ev-rev-list"></div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 

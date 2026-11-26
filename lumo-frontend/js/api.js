@@ -12,7 +12,15 @@ const DEFAULT_TIMEOUT_MS = 10000;
 
 export function getApiBaseUrl() {
   const prefs = getPreferences();
-  return prefs.apiBaseUrl || '';
+  if (prefs.apiBaseUrl) return prefs.apiBaseUrl;
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
+  ) {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return '';
 }
 
 export function isBackendConfigured() {
@@ -46,7 +54,18 @@ async function requestFastApi(path, options = {}) {
     });
 
     if (!response.ok) {
-      const err = new Error(`FastAPI request failed with HTTP ${response.status}`);
+      let detail = '';
+      try {
+        const errBody = await response.json();
+        if (errBody && typeof errBody.detail === 'string') detail = errBody.detail;
+      } catch {
+        // ignore non-JSON error bodies
+      }
+      const err = new Error(
+        detail
+          ? `FastAPI request failed with HTTP ${response.status}: ${detail}`
+          : `FastAPI request failed with HTTP ${response.status}`
+      );
       err.code = 'HTTP_ERROR';
       err.status = response.status;
       throw err;
@@ -131,6 +150,16 @@ export async function searchHybrid(query, options = {}) {
   return normalizeSearchResponse(data, query, 'hybrid', options);
 }
 
+export async function searchWebLive(query, options = {}) {
+  const params = new URLSearchParams({
+    q: query,
+    page: String(options.page || 1),
+    per_page: String(options.perPage || 8),
+  });
+  const data = await requestFastApi(`/api/v1/search/web?${params.toString()}`, { timeoutMs: 15000 });
+  return normalizeSearchResponse(data, query, 'web', options);
+}
+
 /**
  * Unified Search Dispatcher
  */
@@ -138,6 +167,7 @@ export async function executeSearch(query, options = {}) {
   const mode = options.mode || 'hybrid';
   if (mode === 'classic') return searchClassic(query, options);
   if (mode === 'semantic') return searchSemantic(query, options);
+  if (mode === 'web') return searchWebLive(query, options);
   if (mode === 'ai') return searchAi(query, options);
   return searchHybrid(query, options);
 }
@@ -163,6 +193,7 @@ export async function searchAi(query, options = {}) {
   const data = await requestFastApi('/api/v1/search/ai', {
     method: 'POST',
     body: payload,
+    timeoutMs: options.timeoutMs || 30000,
   });
   const items = Array.isArray(data.sources) ? data.sources : [];
   return {
@@ -372,7 +403,7 @@ function normalizeSearchResponse(data, query, mode, options) {
       title: item.title || item.url || 'Untitled Result',
       url: item.url || '',
       domain: item.domain || safeExtractDomain(item.url),
-      category: item.category || 'Indexed',
+      category: item.category || (mode === 'web' ? 'Live Web' : 'Indexed'),
       publishedAt: item.published_at || item.publishedAt || '',
       description: item.description || '',
       snippet: item.snippet || item.description || '',
@@ -1057,4 +1088,175 @@ export async function addEvaluationReview(runId, payload) {
     method: 'POST',
     body: payload,
   });
+}
+
+/* ---- Phase 25 Batch 2: Evaluation Import, Results, Cancel & Reviews ---- */
+export async function importEvaluationDataset(file, { name, category, version = '1.0', description = '' }) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('name', name);
+  form.append('category', category);
+  form.append('version', version);
+  form.append('description', description);
+  const url = `${getBackendUrl().replace(/\/+$/, '')}/api/v1/evaluation-datasets/import`;
+  const resp = await fetch(url, { method: 'POST', body: form });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.detail || `Dataset import failed (${resp.status})`);
+  return data;
+}
+
+export async function fetchEvaluationRunResults(runId) {
+  return await requestFastApi(`/api/v1/evaluations/runs/${encodeURIComponent(runId)}/results`);
+}
+
+export async function fetchEvaluationReviews(runId) {
+  return await requestFastApi(`/api/v1/evaluations/runs/${encodeURIComponent(runId)}/reviews`);
+}
+
+export async function cancelEvaluationRun(runId) {
+  return await requestFastApi(`/api/v1/evaluations/runs/${encodeURIComponent(runId)}/cancel`, { method: 'POST' });
+}
+
+export async function fetchSystemDiagnostics() {
+  return await requestFastApi('/api/v1/health/diagnostics');
+}
+
+export async function fetchSystemInfo() {
+  return await requestFastApi('/api/v1/system/info');
+}
+
+export async function fetchHealthReady() {
+  return await requestFastApi('/api/v1/health/ready');
+}
+
+export async function createWorkflowPlan(payload) {
+  return await requestFastApi('/api/v1/workflows', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function fetchWorkflows(params = {}) {
+  const qs = new URLSearchParams();
+  if (params.intent) qs.set('intent', params.intent);
+  if (params.status) qs.set('status', params.status);
+  if (params.q) qs.set('q', params.q);
+  const suffix = qs.toString() ? `?${qs.toString()}` : '';
+  return await requestFastApi(`/api/v1/workflows${suffix}`);
+}
+
+export async function fetchWorkflowDetail(id) {
+  return await requestFastApi(`/api/v1/workflows/${encodeURIComponent(id)}`);
+}
+
+export async function executeWorkflowPlan(id, payload = {}) {
+  return await requestFastApi(`/api/v1/workflows/${encodeURIComponent(id)}/execute`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function cancelWorkflowRun(id) {
+  return await requestFastApi(`/api/v1/workflows/${encodeURIComponent(id)}/cancel`, { method: 'POST' });
+}
+
+export async function retryWorkflowRun(id) {
+  return await requestFastApi(`/api/v1/workflows/${encodeURIComponent(id)}/retry`, { method: 'POST' });
+}
+
+export async function deleteWorkflowRun(id) {
+  return await requestFastApi(`/api/v1/workflows/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function fetchKnowledgeDashboard() {
+  return await requestFastApi('/api/v1/knowledge/dashboard');
+}
+
+export async function createKnowledgeCollection(payload) {
+  return await requestFastApi('/api/v1/knowledge/collections', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function deleteKnowledgeCollection(id) {
+  return await requestFastApi(`/api/v1/knowledge/collections/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function saveKnowledgeItem(payload) {
+  return await requestFastApi('/api/v1/knowledge/items/save', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function searchKnowledgeHub(payload) {
+  return await requestFastApi('/api/v1/knowledge/search', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function deleteKnowledgeItem(id) {
+  return await requestFastApi(`/api/v1/knowledge/items/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function createKnowledgeNote(payload) {
+  return await requestFastApi('/api/v1/knowledge/notes', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function updateKnowledgeNote(id, payload) {
+  return await requestFastApi(`/api/v1/knowledge/notes/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function fetchKnowledgeRecommendations(itemId) {
+  return await requestFastApi(`/api/v1/knowledge/items/${encodeURIComponent(itemId)}/recommendations`);
+}
+
+export async function importKnowledgeHub(payload) {
+  return await requestFastApi('/api/v1/knowledge/import', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function retrievalSearch(payload) {
+  return await requestFastApi('/api/v1/retrieval/search', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function indexRetrievalContent(payload) {
+  return await requestFastApi('/api/v1/retrieval/index', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function fetchRetrievalIndexStats() {
+  return await requestFastApi('/api/v1/retrieval/index/stats');
+}
+
+export async function fetchRetrievalIndexItems() {
+  return await requestFastApi('/api/v1/retrieval/index/items');
+}
+
+export async function reindexRetrievalItem(id) {
+  return await requestFastApi(`/api/v1/retrieval/index/${encodeURIComponent(id)}/reindex`, { method: 'POST' });
+}
+
+export async function deleteRetrievalItem(id) {
+  return await requestFastApi(`/api/v1/retrieval/index/${encodeURIComponent(id)}?confirm=true`, { method: 'DELETE' });
+}
+
+export async function fetchStudioProjects() {
+  return await requestFastApi('/api/v1/studio/projects');
+}
+
+export async function createStudioProject(payload) {
+  return await requestFastApi('/api/v1/studio/projects', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function fetchStudioProject(id) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}`);
+}
+
+export async function updateStudioProject(id, payload) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function deleteStudioProject(id) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function studioAIAssist(id, payload) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}/ai-assist`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function studioPresentationOutline(id) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}/presentation-outline`, { method: 'POST' });
+}
+
+export async function studioSaveToKnowledge(id, payload = {}) {
+  return await requestFastApi(`/api/v1/studio/projects/${encodeURIComponent(id)}/save-to-knowledge`, { method: 'POST', body: JSON.stringify(payload) });
 }

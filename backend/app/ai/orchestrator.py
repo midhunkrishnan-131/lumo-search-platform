@@ -20,7 +20,9 @@ from app.ai.prompts import AI_SEARCH_SYSTEM_PROMPT, build_user_prompt
 from app.ai.router import AIProviderRouter, ai_provider_router
 from app.core.logging import get_logger
 from app.schemas.ai import AISearchRequest, AISearchResponse
+from app.search.engine import SearchResult
 from app.search.hybrid import HybridSearchOrchestrator
+from app.search.web_provider import live_web_provider
 
 logger = get_logger("ai.orchestrator")
 
@@ -76,8 +78,29 @@ class AISearchOrchestrator:
         )
         retrieval_ms = round((time.perf_counter() - t_retrieval_start) * 1000, 2)
 
-        # Step 3: Context Building & Injection Sanitization
-        context_result = self.context_builder.build_context(search_set.results, query=query, db=self.db)
+        # Step 3: Context Building & Injection Sanitization (fall back to live web search if local index empty)
+        combined_results = list(search_set.results)
+        if not combined_results and not getattr(self.router, "local_only_mode", False):
+            try:
+                web_hits = live_web_provider.search(query=query, page=1, per_page=request.page_size)
+                combined_results = [
+                    SearchResult(
+                        id=h.id,
+                        url=h.url,
+                        title=h.title,
+                        description=h.snippet,
+                        domain=h.domain,
+                        snippet=h.snippet,
+                        score=h.score,
+                        published_at=h.published_at,
+                        sources=[h.source_provider],
+                    )
+                    for h in web_hits
+                ]
+            except Exception as web_exc:
+                logger.warning("Live web fallback in AISearchOrchestrator failed (%s)", type(web_exc).__name__)
+
+        context_result = self.context_builder.build_context(combined_results, query=query, db=self.db)
 
         # Step 4: Check Evidence Sufficiency
         if not context_result.has_sufficient_evidence:

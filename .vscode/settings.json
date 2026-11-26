@@ -1,0 +1,12 @@
+{
+  "liveServer.settings.ignoreFiles": [
+    "**/backend/**",
+    "**/*.log",
+    "**/*.db",
+    "**/*.db-wal",
+    "**/*.db-shm",
+    "**/qdrant_storage/**",
+    "**/backups/**",
+    "**/__pycache__/**"
+  ]
+}

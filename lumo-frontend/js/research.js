@@ -13,7 +13,6 @@ import {
   getResearchReport,
   cancelResearchSession,
   saveToWorkspace,
-  isBackendConfigured,
 } from './api.js';
 import { escapeHtml } from './search-data.js';
 

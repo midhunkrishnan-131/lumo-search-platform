@@ -105,7 +105,14 @@ function renderLoading() {
 
 function renderSourceNotice(source) {
   if (!sourceNoticeEl) return;
-  if (source === 'api') {
+  if (source === 'api' && state.mode === 'web') {
+    sourceNoticeEl.innerHTML = `
+      <div>
+        <strong>Live Web Search</strong> · Real external internet results retrieved via LUMO FastAPI.
+      </div>
+      <a href="./settings.html" class="text-link">Settings</a>
+    `;
+  } else if (source === 'api') {
     sourceNoticeEl.innerHTML = `
       <div>
         <strong>Connected Index</strong> · Results retrieved from the configured LUMO FastAPI backend.
@@ -186,7 +193,7 @@ function renderResults(response) {
     summaryEl.innerHTML = `<span class="tabular-nums">${response.total}</span> ${
       response.total === 1 ? 'result' : 'results'
     } · ${escapeHtml(modeLabel)} mode · ${
-      response.source === 'api' ? 'Live index' : 'Sample data'
+      response.source === 'api' ? (response.mode === 'web' ? 'Live Web' : 'Live index') : 'Sample data'
     }`;
   }
 
@@ -214,8 +221,27 @@ function renderResults(response) {
     `
     : '';
 
+  // Detect AI error states vs a real grounded answer
+  const aiIsError = response.aiAnswer && (
+    response.provider === 'none' ||
+    /unavailable|error|rate limit|timed out|insufficient|not configured/i.test(response.aiAnswer)
+  );
   const aiAnswerHtml = response.aiAnswer
-    ? `
+    ? aiIsError
+      ? `
+      <div class="panel" role="alert" style="margin-bottom: 1.5rem; border-left: 3px solid var(--color-warning, #f59e0b); background: var(--bg-surface);">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <span class="badge" style="background: var(--color-warning, #f59e0b); color: #fff; font-weight: 600; font-size: 0.7rem; text-transform: uppercase;">AI Search</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Provider status</span>
+        </div>
+        <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">${escapeHtml(response.aiAnswer)}</div>
+        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn--primary btn--sm" id="results-retry-btn">Retry</button>
+          <a href="./settings.html" class="btn btn--secondary btn--sm">Configure AI Provider</a>
+        </div>
+      </div>
+    `
+      : `
       <div class="panel" style="margin-bottom: 1.5rem; border-left: 3px solid var(--color-primary); background: var(--bg-surface);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -242,16 +268,18 @@ function renderResults(response) {
     : '';
 
   if (response.items.length === 0) {
+    // For AI mode with an error/status answer, skip the confusing "no results" panel
+    const showNoResultsPanel = !(state.mode === 'ai' && aiIsError);
     listMount.innerHTML = `
       ${directNavHtml}
       ${aiAnswerHtml}
-      <div class="state-panel">
-        <h2 class="state-panel__title">No matching results found in Sample Index</h2>
+      ${showNoResultsPanel ? `<div class="state-panel">
+        <h2 class="state-panel__title">${state.mode === 'ai' ? 'No sources retrieved' : 'No matching results found'}</h2>
         <p class="state-panel__desc">
-          No entries matched “${escapeHtml(state.query)}” in ${escapeHtml(modeLabel)} mode${
+          No entries matched "${escapeHtml(state.query)}" in ${escapeHtml(modeLabel)} mode${
             state.category !== 'All' ? ` under ${escapeHtml(state.category)}` : ''
           }.
-          LUMO is currently running in local demonstration mode.
+          ${state.mode === 'ai' ? 'Index documents to get cited answers.' : 'LUMO is currently running in local demonstration mode.'}
         </p>
         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
           ${
@@ -265,7 +293,7 @@ function renderResults(response) {
               : ''
           }
         </div>
-      </div>
+      </div>` : ''}
     `;
     if (paginationMount) paginationMount.innerHTML = '';
     return;
@@ -369,6 +397,7 @@ function updateAside(response) {
     semantic: 'GET /api/v1/search?q=...&mode=semantic',
     hybrid: 'GET /api/v1/search/hybrid?q=...',
     ai: 'POST /api/v1/search/ai',
+    web: 'GET /api/v1/search/web?q=...',
   };
   const researchHref = state.query
     ? `./research.html?q=${encodeURIComponent(state.query)}`
@@ -387,7 +416,7 @@ function updateAside(response) {
         </div>
         <div class="kv-row" style="grid-template-columns: 92px 1fr;">
           <span class="kv-key">Source</span>
-          <span class="kv-val">${response?.source === 'api' ? 'FastAPI Live' : 'Sample Index'}</span>
+          <span class="kv-val">${response?.source === 'api' ? (state.mode === 'web' ? 'FastAPI Live Web' : 'FastAPI Live') : 'Sample Index'}</span>
         </div>
         <div class="kv-row" style="grid-template-columns: 1fr; gap: 3px;">
           <span class="kv-key">Endpoint</span>

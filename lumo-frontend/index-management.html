@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUMO Index Management & Advanced Retrieval Dashboard.">
+  <title>Index Management — LUMO</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    .im-wrap { max-width: 1120px; margin: 1.5rem auto; padding: 0 1.25rem 3rem; display: grid; gap: 1.25rem; }
+    .im-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem; }
+    .im-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.15rem; }
+    .im-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .im-input { width: 100%; padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); }
+    .im-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.74rem; background: var(--bg-secondary); font-weight: 600; }
+  </style>
+</head>
+<body class="page-app">
+  <div id="lumo-header"></div>
+  <main class="im-wrap">
+    <div>
+      <h1 style="margin:0;">Index Management & Retrieval</h1>
+      <p style="margin:0.25rem 0 0; color:var(--text-secondary); font-size:0.9rem;">Monitor indexed records, duplicate flags, embedding cache performance, and retrieval explanations.</p>
+    </div>
+
+    <div id="im-banner" class="status-banner" hidden></div>
+
+    <section class="im-grid">
+      <div class="im-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Indexed Records</div><div id="im-total" style="font-size:1.5rem;font-weight:700;">—</div></div>
+      <div class="im-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Total Chunks</div><div id="im-chunks" style="font-size:1.5rem;font-weight:700;">—</div></div>
+      <div class="im-card"><div style="color:var(--text-secondary);font-size:0.8rem;">Embedding Cache Hits</div><div id="im-hits" style="font-size:1.5rem;font-weight:700;">—</div></div>
+    </section>
+
+    <section class="im-card">
+      <h2 style="margin-top:0; font-size:1.05rem;">Index Content</h2>
+      <form id="im-idx-form" style="display:grid; gap:0.5rem;">
+        <div style="display:flex; gap:0.5rem;">
+          <input id="im-title" class="im-input" placeholder="Title..." required>
+          <select id="im-ctype" class="im-input" style="width:160px;">
+            <option value="text">Text</option>
+            <option value="markdown">Markdown</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
+        <textarea id="im-content" class="im-input" rows="2" placeholder="Content to chunk, fingerprint, and index..." required></textarea>
+        <button type="submit" class="btn-primary" style="width:fit-content;">Index Content</button>
+      </form>
+    </section>
+
+    <section class="im-card">
+      <h2 style="margin-top:0; font-size:1.05rem;">Indexed Records</h2>
+      <div id="im-list"></div>
+    </section>
+  </main>
+  <script type="module" src="./js/index-management.js"></script>
+</body>
+</html>
