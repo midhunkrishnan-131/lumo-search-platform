@@ -79,6 +79,34 @@ def test_chunking_embeddings_query_processing_and_reranker():
     assert rerank_candidates("Hybrid RAG", cands, cancel_check=lambda: True) == []
 
 
+def test_chunking_keeps_text_that_does_not_fit_the_open_chunk():
+    """An oversized block after a short lead used to be sliced to chunk_size and the tail dropped."""
+    tokens = [f"{i:03d}" for i in range(40)]
+    long_para = "".join(tokens)
+    text = f"Short lead.\n\n{long_para}\n\nClosing note."
+    chunks = chunk_content(text, "d-long", content_type="text", chunk_size=40, chunk_overlap=10)
+    blob = "\n".join(chunk.text for chunk in chunks)
+    missing = [token for token in tokens if token not in blob]
+    assert missing == []
+    assert "Short lead." in blob
+    assert "Closing note." in blob
+    assert all(len(chunk.text) <= 40 for chunk in chunks)
+
+    sentence = "Hello world. " + ("Z" * 100)
+    sentence_chunks = chunk_content(sentence, "d-sent", content_type="text", chunk_size=30, chunk_overlap=5)
+    sentence_blob = "\n".join(chunk.text for chunk in sentence_chunks)
+    assert "Hello world." in sentence_blob
+    assert sentence_blob.count("Z") >= 100
+    assert all(len(chunk.text) <= 30 for chunk in sentence_chunks)
+
+    markdown = "# Title\n\nShort.\n\n" + ("M" * 90)
+    md_chunks = chunk_content(markdown, "d-md", content_type="markdown", chunk_size=40, chunk_overlap=8)
+    md_blob = "\n".join(chunk.text for chunk in md_chunks)
+    assert md_blob.count("M") >= 90
+    assert any(chunk.section == "Title" for chunk in md_chunks)
+    assert all(len(chunk.text) <= 40 for chunk in md_chunks)
+
+
 def test_indexing_duplicate_detection_and_index_management(ret_client: TestClient):
     r1 = ret_client.post(
         "/api/v1/retrieval/index",
